@@ -7,7 +7,7 @@ class SampleCLI(TraitsCLIBase):
     """Sample CLI using `traitscli`."""
 
     # These variables are configurable by command line option
-    yes = Bool(config=True)
+    yes = Bool(desc='yes flag for sample CLI', config=True)
     no = Bool(True, config=True)
     fnum = Float(config=True)
     inum = Int(config=True)
