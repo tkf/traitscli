@@ -8,6 +8,7 @@ class SampleCLI(TraitsCLIBase):
 
     not_configurable_from_cli = Bool
     yes = Bool(config=True)
+    no = Bool(True, config=True)
     fnum = Float(config=True)
     inum = Int(config=True)
     string = Str(config=True)

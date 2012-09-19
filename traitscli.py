@@ -10,8 +10,6 @@ from traits.api import (
 )
 
 _trait_simple_type_map = {
-    Bool: bool,
-    CBool: bool,
     Complex: complex,
     CComplex: complex,
     Float: float,
@@ -78,6 +76,12 @@ class TraitsCLIBase(HasTraits):
             stype = trait_simple_type(v.trait_type)
             if stype:
                 argkwds['type'] = stype
+            elif isinstance(v.trait_type, (Bool, CBool)):
+                argkwds.update(
+                    action='store_const',
+                    default=v.trait_type.default_value,
+                    const=not v.trait_type.default_value,
+                )
             elif isinstance(v.trait_type, Enum):
                 argkwds['choices'] = v.trait_type.values
             else:
