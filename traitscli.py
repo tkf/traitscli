@@ -91,13 +91,16 @@ class TraitsCLIBase(HasTraits):
         return parser
 
     @classmethod
-    def cli(cls):
+    def cli(cls, args=None):
         """
         Call `cls.run` using command line arguments.
+
+        When `args` is given, it is used instead of ``sys.argv[1:]``.
+
         """
         parser = cls.get_argparser()
-        args = parser.parse_args()
-        return applyargs(**vars(args))
+        ns = parser.parse_args(args)
+        return applyargs(**vars(ns))
 
     @classmethod
     def run(cls, **kwds):
