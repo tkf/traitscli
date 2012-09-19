@@ -6,7 +6,7 @@ class SampleCLI(TraitsCLIBase):
 
     """Sample CLI using `traitscli`."""
 
-    not_configurable_from_cli = Bool
+    # These variables are configurable by command line option
     yes = Bool(config=True)
     no = Bool(True, config=True)
     fnum = Float(config=True)
@@ -14,7 +14,11 @@ class SampleCLI(TraitsCLIBase):
     string = Str(config=True)
     choice = Enum(['a', 'b', 'c'], config=True)
 
+    # You can have "internal" attributes which cannot be set via CLI.
+    not_configurable_from_cli = Bool()
+
     def do_run(self):
+        # Get trait attribute names
         names = self.class_trait_names(
             # Avoid 'trait_added' and 'trait_modified'
             # (See also `HasTraits.traits`):
@@ -25,4 +29,5 @@ class SampleCLI(TraitsCLIBase):
 
 
 if __name__ == '__main__':
+    # Run command line interface
     SampleCLI.cli()
