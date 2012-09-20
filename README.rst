@@ -26,9 +26,6 @@ Usage::
 TODO
 ----
 
-* Dict/List support.
-  Set dictionary/list value by ``--dict['key']=val``.
-
 * Nested class support.
   Set attributes of nested class by ``--sub.attr=val``.
 

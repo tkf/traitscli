@@ -1,7 +1,7 @@
 from argparse import ArgumentParser
 import unittest
 
-from traits.api import Event, Callable, Type
+from traits.api import Event, Callable, Type, Dict, List
 
 from traitscli import TraitsCLIBase
 from sample import SampleCLI
@@ -102,4 +102,28 @@ class TestEvalType(TestCaseBase):
             ),
             ['--callable', 'id',
              '--type', 'int',
+            ])
+
+
+class TestDictLikeOptions(TestCaseBase):
+
+    class cliclass(TestingCLIBase):
+        dict = Dict(config=True)
+        list = List(range(3), config=True)
+
+    def test_empty_args(self):
+        self.assert_attributes(dict(
+            dict={},
+            list=range(3),
+        ))
+
+    def test_full_args(self):
+        self.assert_attributes(
+            dict(
+                dict=dict(a=1, b=2),
+                list=[0, 100, 2],
+            ),
+            ["--dict['a']=1",
+             "--dict['b']=2",
+             "--list[1]=100",
             ])

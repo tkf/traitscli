@@ -128,7 +128,6 @@ class TraitsCLIBase(HasTraits):
             else:
                 argkwds['type'] = eval
             parser.add_argument(dest, **argkwds)
-        parser.set_defaults(func=cls.run)
         return parser
 
     @classmethod
@@ -139,17 +138,55 @@ class TraitsCLIBase(HasTraits):
         When `args` is given, it is used instead of ``sys.argv[1:]``.
 
         """
+        if args is None:
+            import sys
+            args = sys.argv[1:]
+
+        (dopts, args) = parse_dict_like_options(args, cls.config_names())
         parser = cls.get_argparser()
         ns = parser.parse_args(args)
-        return applyargs(**vars(ns))
+
+        def before_run(self):
+            self.__eval_dict_like_options(dopts)
+
+        return cls._run(__before_run=before_run, **vars(ns))
+
+    def __eval_dict_like_options(self, opts):
+        ns = self.config()
+        for (rhs, lhs) in opts:
+            exec '{0} = {1}'.format(rhs, lhs) in ns
+
+    @classmethod
+    def config_names(cls, **metadata):
+        """Get trait attribute names of this class."""
+        return cls.class_trait_names(config=True, **metadata)
+
+    def config(self, **metadata):
+        """
+        Return a dict of configurable attributes of this instance.
+
+        See `self.traits` for the usage of `metadata`.
+        Note that ``config=True`` is already specified.
+
+        """
+        names = self.config_names(**metadata)
+        return dict((n, getattr(self, n)) for n in names)
 
     @classmethod
     def run(cls, **kwds):
         """
         Make an instance of this class with args `kwds` and call `do_run`.
         """
+        return cls._run(**kwds)
+
+    @classmethod
+    def _run(cls, **kwds):
+        before_run = kwds.pop('__before_run', lambda _: None)
+        after_run = kwds.pop('__after_run', lambda _: None)
         self = cls(**kwds)
+        before_run(self)
         self.do_run()
+        after_run(self)
         return self
 
     def do_run(self):
