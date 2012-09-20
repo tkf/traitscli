@@ -1,7 +1,7 @@
 from argparse import ArgumentParser
 import unittest
 
-from traits.api import Event, Callable, Type, Dict, List, Int, Float
+from traits.api import Event, Callable, Type, Dict, List, Int, Float, Instance
 
 from traitscli import TraitsCLIBase, multi_command_cli
 from sample import SampleCLI
@@ -172,3 +172,32 @@ class TestMultiCommandCLI(unittest.TestCase):
         self.assert_invalid_args(['cmd_2', '--invalid', 'x'])
         self.assert_invalid_args(['cmd_2', '--invalid["k"]', 'x'])
         self.assert_invalid_args(['cmd_2', '--dict', '{}'])  # cmd_1 option
+
+
+class TestDottedName(unittest.TestCase):
+
+    def setUp(self):
+        # Doing this as "class context" yields an name error
+
+        class subcliclass(TraitsCLIBase):
+            int = Int
+
+        class cliclass(TraitsCLIBase):
+            int = Int
+            sub = Instance(subcliclass, args=())
+
+        self.subcliclass = subcliclass
+        self.cliclass = cliclass
+
+    def make_instance(self, kwds):
+        return self.cliclass(**kwds)
+
+    def test_normal_attr(self):
+        obj = self.make_instance({'int': 1})
+        self.assertEqual(obj.int, 1)
+        self.assertEqual(obj.sub.int, 0)
+
+    def test_dotted_attr(self):
+        obj = self.make_instance({'int': 1, 'sub.int': 2})
+        self.assertEqual(obj.int, 1)
+        self.assertEqual(obj.sub.int, 2)
