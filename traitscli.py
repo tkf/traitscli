@@ -219,7 +219,7 @@ class TraitsCLIBase(HasTraits):
         """
 
 
-def multi_command_cli(name_class_pairs):
+def multi_command_cli(name_class_pairs, args=None):
     """
     Launch CLI to call multiple classes.
 
@@ -237,4 +237,4 @@ def multi_command_cli(name_class_pairs):
     subpersers = parser.add_subparsers()
     for (name, cls) in name_class_pairs:
         cls.connect_subparser(subpersers, name)
-    return parse_and_run(parser)
+    return parse_and_run(parser, args)

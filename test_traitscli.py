@@ -1,9 +1,9 @@
 from argparse import ArgumentParser
 import unittest
 
-from traits.api import Event, Callable, Type, Dict, List
+from traits.api import Event, Callable, Type, Dict, List, Int, Float
 
-from traitscli import TraitsCLIBase
+from traitscli import TraitsCLIBase, multi_command_cli
 from sample import SampleCLI
 
 
@@ -135,3 +135,27 @@ class TestDictLikeOptions(TestCaseBase):
                           self.cliclass.cli, ['--invalid', 'x'])
         self.assertRaises(ArgumentParserExitCalled,
                           self.cliclass.cli, ['--invalid["k"]', 'x'])
+
+
+class TestMultiCommandCLI(unittest.TestCase):
+
+    class cliclass_1(TestingCLIBase):
+        int = Int(config=True)
+        dict = Dict(config=True)
+
+    class cliclass_2(TestingCLIBase):
+        float = Float(config=True)
+        list = List(config=True)
+
+    def run_multi_command_cli(self, args):
+        pairs = [('cmd_1', self.cliclass_1),
+                 ('cmd_2', self.cliclass_2)]
+        return multi_command_cli(pairs, args)
+
+    def test_run_1_empty_args(self):
+        ret = self.run_multi_command_cli(['cmd_1'])
+        self.assertTrue(isinstance(ret, self.cliclass_1))
+
+    def test_run_2_empty_args(self):
+        ret = self.run_multi_command_cli(['cmd_2'])
+        self.assertTrue(isinstance(ret, self.cliclass_2))
