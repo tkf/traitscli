@@ -318,8 +318,8 @@ class TraitsCLIBase(HasTraits):
 
     def __init__(self, **kwds):
         super(TraitsCLIBase, self).__init__()
-        for (k, v) in kwds.iteritems():
-            setdottedattr(self, k, v)
+        for k in sorted(kwds):  # set shallower attributes first
+            setdottedattr(self, k, kwds[k])
 
     @classmethod
     def connect_subparser(cls, subpersers, name):
