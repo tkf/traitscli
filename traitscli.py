@@ -81,6 +81,24 @@ class InvalidDictLikeOptionError(Exception):
 
 
 def parse_and_run(parser, args=None):
+    """
+    Parse command line `args` using `parser` and run function of it.
+
+    `Namespace` object `ns` returned by ``parser.parse_args(args)``
+    must satisfy the following constraints:
+
+    * It has `func` attribute which is an callable object.
+      (i.e., you should set it by ``parser.set_default(func=some_callable)``.)
+    * The callable `ns.func` can take rest of attributes defined in
+      the `Namespace` object.
+    * The callable `ns.func` can also take `__dict_like_options`
+      keyword argument.  This is the first part of the tuple returned
+      by `parse_dict_like_options`.
+
+    `ns.func` is typically `TraitsCLIBase.run`.
+    It is set in `TraitsCLIBase.add_parser`.
+
+    """
     if args is None:
         import sys
         args = sys.argv[1:]
