@@ -85,6 +85,9 @@ def parse_and_run(parser, args=None):
         import sys
         args = sys.argv[1:]
 
+    def applyargs(func, **kwds):
+        return func(**kwds)
+
     (dopts, args) = parse_dict_like_options(args)
     ns = parser.parse_args(args)
     try:
@@ -216,10 +219,6 @@ class TraitsCLIBase(HasTraits):
         """
 
 
-def applyargs(func, **kwds):
-    return func(**kwds)
-
-
 def multi_command_cli(name_class_pairs):
     """
     Launch CLI to call multiple classes.
@@ -238,5 +237,4 @@ def multi_command_cli(name_class_pairs):
     subpersers = parser.add_subparsers()
     for (name, cls) in name_class_pairs:
         cls.connect_subparser(subpersers, name)
-    args = parser.parse_args()
-    return applyargs(**vars(args))
+    return parse_and_run(parser)
