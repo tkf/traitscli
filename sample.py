@@ -1,5 +1,5 @@
 from traitscli import TraitsCLIBase
-from traits.api import Bool, Float, Int, Str, Enum, Event
+from traits.api import Bool, Float, Int, Str, Enum
 
 
 class SampleCLI(TraitsCLIBase):
@@ -27,11 +27,7 @@ class SampleCLI(TraitsCLIBase):
     not_configurable_from_cli = Bool()
 
     def do_run(self):
-        # Get trait attribute names
-        names = self.class_trait_names(
-            # Avoid 'trait_added' and 'trait_modified'
-            # (See also `HasTraits.traits`):
-            trait_type=lambda t: not isinstance(t, Event))
+        names = self.config_names()
         width = max(map(len, names))
         for na in names:
             print "{0:{1}} : {2!r}".format(na, width, getattr(self, na))
