@@ -34,6 +34,9 @@ TODO
 
 * Upload this to PyPI.
 
+* Parameter file support (ini/conf, json, yaml, etc.).
+  Load parameter from file then set attribute.
+
 * Support `other predefined Traits listed here`__.
 
 __ http://docs.enthought.com/traits/traits_user_manual/defining.html
