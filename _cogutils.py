@@ -54,3 +54,18 @@ def inject_sample_source():
 def inject_sample_doc():
     inject_sample_source()
     inject_sample_run()
+
+
+def inject_readme():
+    cog.outl(
+        '"""\n{0}\n"""'
+        .format("".join(strip_cog_lines(file('README.rst').readlines()))))
+
+
+def strip_cog_lines(lines):
+    for l in lines:
+        if '[[[cog' in l:       # assuming no multiple cog line!
+            continue
+        if '[[[end]]]' in l:
+            continue
+        yield l
