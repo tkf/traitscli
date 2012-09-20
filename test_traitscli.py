@@ -7,7 +7,22 @@ from traitscli import TraitsCLIBase
 from sample import SampleCLI
 
 
+class ArgumentParserExitCalled(Exception):
+    pass
+
+
+class ArgumentParserNoExit(ArgumentParser):
+
+    def exit(self, status=0, message=None):
+        raise ArgumentParserExitCalled(status, message)
+
+    def error(self, message):
+        self.exit(2, message)
+
+
 class TestingCLIBase(TraitsCLIBase):
+
+    ArgumentParser = ArgumentParserNoExit
 
     def do_run(self):
         # Get trait attribute names
@@ -28,23 +43,10 @@ class TestCaseBase(unittest.TestCase):
         self.assertEqual(ret.attributes, attributes)
 
 
-class ArgumentParserExitCalled(Exception):
-    pass
-
-
-class ArgumentParserNoExit(ArgumentParser):
-
-    def exit(self, status=0, message=None):
-        raise ArgumentParserExitCalled(status, message)
-
-    def error(self, message):
-        self.exit(2, message)
-
-
 class TestSampleCLI(TestCaseBase):
 
     class cliclass(TestingCLIBase, SampleCLI):
-        ArgumentParser = ArgumentParserNoExit
+        pass
 
     def test_empty_args(self):
         self.assert_attributes(dict(
