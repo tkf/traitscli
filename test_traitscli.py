@@ -159,3 +159,16 @@ class TestMultiCommandCLI(unittest.TestCase):
     def test_run_2_empty_args(self):
         ret = self.run_multi_command_cli(['cmd_2'])
         self.assertTrue(isinstance(ret, self.cliclass_2))
+
+    def assert_invalid_args(self, args):
+        self.assertRaises(ArgumentParserExitCalled,
+                          self.run_multi_command_cli, args)
+
+    def test_invalid_args(self):
+        self.assert_invalid_args(['--invalid', 'x'])  # no sub-command
+        self.assert_invalid_args(['cmd_1', '--invalid', 'x'])
+        self.assert_invalid_args(['cmd_1', '--invalid["k"]', 'x'])
+        self.assert_invalid_args(['cmd_1', '--list', '[]'])  # cmd_2 option
+        self.assert_invalid_args(['cmd_2', '--invalid', 'x'])
+        self.assert_invalid_args(['cmd_2', '--invalid["k"]', 'x'])
+        self.assert_invalid_args(['cmd_2', '--dict', '{}'])  # cmd_1 option
