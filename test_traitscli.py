@@ -129,3 +129,9 @@ class TestDictLikeOptions(TestCaseBase):
              "--dict['b']=2",
              "--list[1]=100",
             ])
+
+    def test_invalid_args(self):
+        self.assertRaises(ArgumentParserExitCalled,
+                          self.cliclass.cli, ['--invalid', 'x'])
+        self.assertRaises(ArgumentParserExitCalled,
+                          self.cliclass.cli, ['--invalid["k"]', 'x'])
