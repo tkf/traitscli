@@ -24,13 +24,22 @@ class TestingCLIBase(TraitsCLIBase):
 
     ArgumentParser = ArgumentParserNoExit
 
-    def do_run(self):
+    @property
+    def attributes(self):
         # Get trait attribute names
         names = self.class_trait_names(
             # Avoid 'trait_added' and 'trait_modified'
             # (See also `HasTraits.traits`):
             trait_type=lambda t: not isinstance(t, Event))
-        self.attributes = dict((n, getattr(self, n)) for n in names)
+
+        return dict((n, self[n]) for n in names)
+
+    def __getitem__(self, key):
+        attr = getattr(self, key)
+        if isinstance(attr, TraitsCLIBase):
+            return attr.attributes
+        else:
+            return attr
 
 
 class TestCaseBase(unittest.TestCase):
@@ -207,3 +216,36 @@ class TestDottedName(unittest.TestCase):
             'int': 1, 'sub': self.subcliclass(int=3), 'sub.int': 2})
         self.assertEqual(obj.int, 1)
         self.assertEqual(obj.sub.int, 2)
+
+
+class TestNestedCLI(TestCaseBase):
+
+    class cliclass(TestingCLIBase):
+        class subcliclass(TestingCLIBase):
+            int = Int(config=True)
+        int = Int(config=True)
+        sub = Instance(subcliclass, args=(), config=True)
+
+    def test_empty_args(self):
+        self.assert_attributes(dict(
+            int=0,
+            sub=dict(int=0),
+        ))
+
+    def test_full_args(self):
+        self.assert_attributes(
+            dict(
+                int=1,
+                sub=dict(int=2),
+            ),
+            ["--int=1",
+             "--sub.int=2",
+            ])
+
+    def test_invalid_args(self):
+        self.assertRaises(ArgumentParserExitCalled,
+                          self.cliclass.cli, ['--invalid', 'x'])
+        self.assertRaises(ArgumentParserExitCalled,
+                          self.cliclass.cli, ['--invalid["k"]', 'x'])
+        self.assertRaises(ArgumentParserExitCalled,
+                          self.cliclass.cli, ['--sub', 'x'])

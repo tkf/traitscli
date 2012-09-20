@@ -133,7 +133,7 @@ import argparse
 from traits.api import (
     HasTraits, Bool, CBool, Complex, CComplex, Float, CFloat,
     Int, CInt, Long, CLong, Str, CStr, Unicode, CUnicode,
-    Enum,
+    Enum, Instance,
 )
 
 _trait_simple_type_map = {
@@ -339,14 +339,22 @@ class TraitsCLIBase(HasTraits):
         return textwrap.dedent(cls.__doc__) if cls.__doc__ else None
 
     @classmethod
-    def add_parser(cls, parser):
+    def add_parser(cls, parser, prefix=''):
         """
         Call `parser.add_argument` based on class traits of `cls`.
         """
         traits = cls.class_traits(config=True)
         for k in sorted(traits):
             v = traits[k]
-            dest = '--{0}'.format(k)
+
+            if (isinstance(v.trait_type, Instance) and
+                issubclass(v.trait_type.klass, TraitsCLIBase)):
+                v.trait_type.klass.add_parser(parser, k + '.')
+                # set_defaults is called here and it's redundant...
+                # but as there is no harm, let it be like this for now.
+                continue
+
+            dest = '--{0}{1}'.format(prefix, k)
             argkwds = dict(default=v.default)
             argkwds['help'] = v.desc or ' '  # to force print default
             stype = trait_simple_type(v.trait_type)
