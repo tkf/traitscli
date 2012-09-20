@@ -1,3 +1,4 @@
+from argparse import ArgumentParser
 import unittest
 
 from traits.api import Event, Callable, Type
@@ -27,10 +28,23 @@ class TestCaseBase(unittest.TestCase):
         self.assertEqual(ret.attributes, attributes)
 
 
+class ArgumentParserExitCalled(Exception):
+    pass
+
+
+class ArgumentParserNoExit(ArgumentParser):
+
+    def exit(self, status=0, message=None):
+        raise ArgumentParserExitCalled(status, message)
+
+    def error(self, message):
+        self.exit(2, message)
+
+
 class TestSampleCLI(TestCaseBase):
 
     class cliclass(TestingCLIBase, SampleCLI):
-        pass
+        ArgumentParser = ArgumentParserNoExit
 
     def test_empty_args(self):
         self.assert_attributes(dict(
@@ -62,13 +76,16 @@ class TestSampleCLI(TestCaseBase):
             ])
 
     def test_invalid_type_int(self):
-        self.assertRaises(SystemExit, self.cliclass.cli, ['--inum', 'x'])
+        self.assertRaises(ArgumentParserExitCalled,
+                          self.cliclass.cli, ['--inum', 'x'])
 
     def test_invalid_type_float(self):
-        self.assertRaises(SystemExit, self.cliclass.cli, ['--fnum', 'x'])
+        self.assertRaises(ArgumentParserExitCalled,
+                          self.cliclass.cli, ['--fnum', 'x'])
 
     def test_invalid_type_enum(self):
-        self.assertRaises(SystemExit, self.cliclass.cli, ['--choice', 'x'])
+        self.assertRaises(ArgumentParserExitCalled,
+                          self.cliclass.cli, ['--choice', 'x'])
 
 
 class TestEvalType(TestCaseBase):
