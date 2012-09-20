@@ -2,8 +2,6 @@
 Type-safe CLI generator based on class traits.
 """
 
-from itertools import imap
-
 from traits.api import (
     HasTraits, Bool, CBool, Complex, CComplex, Float, CFloat,
     Int, CInt, Long, CLong, Str, CStr, Unicode, CUnicode,
@@ -32,35 +30,30 @@ def trait_simple_type(trait):
             return ty
 
 
-def parse_dict_like_options(argiter, names):
+def parse_dict_like_options(argiter):
     """
     Parse dict-like option (--dict['key']) in `argiter`.
-
-    Options only listed in `names` will be parsed.
 
     Return ``(opts, args)`` tuple.  `opts` is the dict-like option
     argument.  It is a list of 2-tuples ``(option, value)``.  `args`
     is rest of argument.
 
-    >>> parse_dict_like_options(['--a[k]=b'], ['a'])
+    >>> parse_dict_like_options(['--a[k]=b'])
     ([('a[k]', 'b')], [])
-    >>> parse_dict_like_options(['--a[k]', 'b'], ['a'])
+    >>> parse_dict_like_options(['--a[k]', 'b'])
     ([('a[k]', 'b')], [])
-    >>> parse_dict_like_options(['--a[k]', 'b'], [])
-    ([], ['--a[k]', 'b'])
 
     """
     options = []
     positional = []
     argiter = iter(argiter)
-    option_prefixes = map("--{0}[".format, names)
-    is_dict_like_opt = lambda x: any(imap(x.startswith, option_prefixes))
     while True:
         try:
             arg = argiter.next()
         except StopIteration:
             return (options, positional)
-        if is_dict_like_opt(arg):
+        if arg.startswith('--') and len(arg) > 2 and arg[2].isalpha() \
+           and '[' in arg:
             key = arg[2:]
             if '=' in key:
                 options.append(tuple(key.split('=', 1)))
@@ -68,6 +61,23 @@ def parse_dict_like_options(argiter, names):
                 options.append((key, argiter.next()))
         else:
             positional.append(arg)
+
+
+def names_in_dict_like_options(dopts):
+    """
+    Return variable names in `dopts`.
+
+    >>> names_in_dict_like_options([('a[k]', 'b'), ('c[k]', 'd')])
+    ['a', 'c']
+
+    """
+    return [k.split('[', 1)[0] for (k, v) in dopts]
+
+
+class InvalidDictLikeOptionError(Exception):
+
+    def __init__(self, message):
+        self.message
 
 
 class TraitsCLIBase(HasTraits):
@@ -143,10 +153,13 @@ class TraitsCLIBase(HasTraits):
             import sys
             args = sys.argv[1:]
 
-        (dopts, args) = parse_dict_like_options(args, cls.config_names())
+        (dopts, args) = parse_dict_like_options(args)
         parser = cls.get_argparser()
         ns = parser.parse_args(args)
-        return applyargs(__dict_like_options=dopts, **vars(ns))
+        try:
+            return applyargs(__dict_like_options=dopts, **vars(ns))
+        except InvalidDictLikeOptionError as e:
+            parser.exit(e.message)
 
     @classmethod
     def run(cls, **kwds):
@@ -161,7 +174,17 @@ class TraitsCLIBase(HasTraits):
 
     def __eval_dict_like_options(self, dopts):
         ns = self.config()
+        unknown = set(names_in_dict_like_options(dopts)) - set(ns)
+        if unknown:
+            unknown = tuple(unknown)
+            clargs = ' '.join(
+                '--{0}={1}'.format(k, v) for (k, v) in dopts
+                if k.startswith(unknown))
+            raise InvalidDictLikeOptionError(
+                "Unknown dict-like options {0}".format(clargs))
         for (rhs, lhs) in dopts:
+            # TODO: Check that rhs/lhs really an expression, rather
+            #       than code containing ";" or "\n".
             exec '{0} = {1}'.format(rhs, lhs) in ns
 
     @classmethod
