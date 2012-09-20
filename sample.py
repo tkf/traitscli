@@ -4,7 +4,7 @@ from traits.api import Bool, Float, Int, Str, Enum
 
 class SampleCLI(TraitsCLIBase):
 
-    """
+    '''
     Sample CLI using `traitscli`.
 
     Example::
@@ -13,7 +13,7 @@ class SampleCLI(TraitsCLIBase):
       %(prog)s --string something   # => obj.string = 'string'
       %(prog)s --choice x           # => raise error (x is not in {a, b, c})
 
-    """
+    '''
 
     # These variables are configurable by command line option
     yes = Bool(desc='yes flag for sample CLI', config=True)

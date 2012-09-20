@@ -1,6 +1,5 @@
-==================================================
- Traits CLI - CLI generator based on class traits
-==================================================
+Traits CLI - CLI generator based on class traits
+================================================
 
 Sample
 ------
@@ -15,7 +14,7 @@ Source code::
 
   class SampleCLI(TraitsCLIBase):
 
-      """
+      '''
       Sample CLI using `traitscli`.
 
       Example::
@@ -24,7 +23,7 @@ Source code::
         %(prog)s --string something   # => obj.string = 'string'
         %(prog)s --choice x           # => raise error (x is not in {a, b, c})
 
-      """
+      '''
 
       # These variables are configurable by command line option
       yes = Bool(desc='yes flag for sample CLI', config=True)
