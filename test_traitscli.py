@@ -201,3 +201,9 @@ class TestDottedName(unittest.TestCase):
         obj = self.make_instance({'int': 1, 'sub.int': 2})
         self.assertEqual(obj.int, 1)
         self.assertEqual(obj.sub.int, 2)
+
+    def test_ordered_initialization(self):
+        obj = self.make_instance({
+            'int': 1, 'sub': self.subcliclass(int=3), 'sub.int': 2})
+        self.assertEqual(obj.int, 1)
+        self.assertEqual(obj.sub.int, 2)
