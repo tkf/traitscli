@@ -316,6 +316,11 @@ class TraitsCLIBase(HasTraits):
 
     ArgumentParser = argparse.ArgumentParser
 
+    def __init__(self, **kwds):
+        super(TraitsCLIBase, self).__init__()
+        for (k, v) in kwds.iteritems():
+            setdottedattr(self, k, v)
+
     @classmethod
     def connect_subparser(cls, subpersers, name):
         return cls.add_parser(subpersers.add_parser(name))
