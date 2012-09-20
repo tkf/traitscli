@@ -140,8 +140,7 @@ class TraitsCLIBase(HasTraits):
 
     """
 
-    from argparse import ArgumentParser
-    ArgumentParser = ArgumentParser  # to cheat pyflake...
+    ArgumentParser = argparse.ArgumentParser
 
     @classmethod
     def connect_subparser(cls, subpersers, name):
