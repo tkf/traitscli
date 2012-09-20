@@ -2,6 +2,7 @@
 Type-safe CLI generator based on class traits.
 """
 
+from itertools import imap
 
 from traits.api import (
     HasTraits, Bool, CBool, Complex, CComplex, Float, CFloat,
@@ -29,6 +30,44 @@ def trait_simple_type(trait):
     for (tr, ty) in _trait_simple_type_map.iteritems():
         if isinstance(trait, tr):
             return ty
+
+
+def parse_dict_like_options(argiter, names):
+    """
+    Parse dict-like option (--dict['key']) in `argiter`.
+
+    Options only listed in `names` will be parsed.
+
+    Return ``(opts, args)`` tuple.  `opts` is the dict-like option
+    argument.  It is a list of 2-tuples ``(option, value)``.  `args`
+    is rest of argument.
+
+    >>> parse_dict_like_options(['--a[k]=b'], ['a'])
+    ([('a[k]', 'b')], [])
+    >>> parse_dict_like_options(['--a[k]', 'b'], ['a'])
+    ([('a[k]', 'b')], [])
+    >>> parse_dict_like_options(['--a[k]', 'b'], [])
+    ([], ['--a[k]', 'b'])
+
+    """
+    options = []
+    positional = []
+    argiter = iter(argiter)
+    option_prefixes = map("--{0}[".format, names)
+    is_dict_like_opt = lambda x: any(imap(x.startswith, option_prefixes))
+    while True:
+        try:
+            arg = argiter.next()
+        except StopIteration:
+            return (options, positional)
+        if is_dict_like_opt(arg):
+            key = arg[2:]
+            if '=' in key:
+                options.append(tuple(key.split('=', 1)))
+            else:
+                options.append((key, argiter.next()))
+        else:
+            positional.append(arg)
 
 
 class TraitsCLIBase(HasTraits):
