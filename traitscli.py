@@ -3,6 +3,26 @@
 Traits CLI - CLI generator based on class traits
 ================================================
 
+Traits CLI is based on `Enthought's Traits library <traits>`_.
+
+Some benefits:
+
+* Automatically set type (int/float/...) of command line argument.
+* Help string generation.
+* "Deep value"" configuration:
+  e.g., ``--dict['a']['b']['c']=1`` is equivalent to
+  ``obj.dict['a']['b']['c'] = 1`` in Python code.
+
+.. _traits: https://github.com/enthought/traits
+
+
+Dependencies
+------------
+
+- traits_
+- argparse (for Python < 2.7)
+
+
 Sample
 ------
 
