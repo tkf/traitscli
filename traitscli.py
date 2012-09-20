@@ -128,6 +128,7 @@ class TraitsCLIBase(HasTraits):
             else:
                 argkwds['type'] = eval
             parser.add_argument(dest, **argkwds)
+        parser.set_defaults(func=cls.run)
         return parser
 
     @classmethod
@@ -145,15 +146,22 @@ class TraitsCLIBase(HasTraits):
         (dopts, args) = parse_dict_like_options(args, cls.config_names())
         parser = cls.get_argparser()
         ns = parser.parse_args(args)
+        return applyargs(__dict_like_options=dopts, **vars(ns))
 
-        def before_run(self):
-            self.__eval_dict_like_options(dopts)
+    @classmethod
+    def run(cls, **kwds):
+        """
+        Make an instance of this class with args `kwds` and call `do_run`.
+        """
+        dopts = kwds.pop('__dict_like_options', [])
+        self = cls(**kwds)
+        self.__eval_dict_like_options(dopts)
+        self.do_run()
+        return self
 
-        return cls._run(__before_run=before_run, **vars(ns))
-
-    def __eval_dict_like_options(self, opts):
+    def __eval_dict_like_options(self, dopts):
         ns = self.config()
-        for (rhs, lhs) in opts:
+        for (rhs, lhs) in dopts:
             exec '{0} = {1}'.format(rhs, lhs) in ns
 
     @classmethod
@@ -171,23 +179,6 @@ class TraitsCLIBase(HasTraits):
         """
         names = self.config_names(**metadata)
         return dict((n, getattr(self, n)) for n in names)
-
-    @classmethod
-    def run(cls, **kwds):
-        """
-        Make an instance of this class with args `kwds` and call `do_run`.
-        """
-        return cls._run(**kwds)
-
-    @classmethod
-    def _run(cls, **kwds):
-        before_run = kwds.pop('__before_run', lambda _: None)
-        after_run = kwds.pop('__after_run', lambda _: None)
-        self = cls(**kwds)
-        before_run(self)
-        self.do_run()
-        after_run(self)
-        return self
 
     def do_run(self):
         """
