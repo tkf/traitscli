@@ -247,6 +247,54 @@ class DefaultHelpFormatter(argparse.RawDescriptionHelpFormatter,
     pass
 
 
+def splitdottedname(dottedname):
+    return (dottedname if isinstance(dottedname, (tuple, list))
+            else dottedname.split('.'))
+
+
+def getdottedattr(object, dottedname):
+    """
+    `getattr` which works with dot-separated name.
+
+    `object` is same as in `getattr`.
+    `dottedname` can be dot-separated name (string) or already
+    separated name (tuple or list).
+
+    >>> class Dotty(object):
+    ...     pass
+    >>> a = Dotty()
+    >>> a.b = Dotty()
+    >>> a.b.c = 'value'
+    >>> getdottedattr(a, 'b.c')
+    'value'
+
+    """
+    for name in splitdottedname(dottedname):
+        object = getattr(object, name)
+    return object
+
+
+def setdottedattr(object, dottedname, value):
+    """
+    `setattr` which works with dot-separated name.
+
+    `object` and `value` are same as in `setattr`.
+    `dottedname` can be dot-separated name (string) or already
+    separated name (tuple or list).
+
+    >>> class Dotty(object):
+    ...     pass
+    >>> a = Dotty()
+    >>> a.b = Dotty()
+    >>> setdottedattr(a, 'b.c', 'value')
+    >>> a.b.c
+    'value'
+
+    """
+    names = splitdottedname(dottedname)
+    setattr(getdottedattr(object, names[:-1]), names[-1], value)
+
+
 class TraitsCLIBase(HasTraits):
 
     """
