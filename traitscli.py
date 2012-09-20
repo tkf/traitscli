@@ -2,6 +2,8 @@
 Type-safe CLI generator based on class traits.
 """
 
+import argparse
+
 from traits.api import (
     HasTraits, Bool, CBool, Complex, CComplex, Float, CFloat,
     Int, CInt, Long, CLong, Str, CStr, Unicode, CUnicode,
@@ -114,6 +116,11 @@ def parse_and_run(parser, args=None):
         parser.exit(e.message)
 
 
+class DefaultHelpFormatter(argparse.RawDescriptionHelpFormatter,
+                           argparse.ArgumentDefaultsHelpFormatter):
+    pass
+
+
 class TraitsCLIBase(HasTraits):
 
     """
@@ -142,9 +149,16 @@ class TraitsCLIBase(HasTraits):
 
     @classmethod
     def get_argparser(cls):
-        parser = cls.ArgumentParser(description=cls.__doc__)
+        parser = cls.ArgumentParser(
+            formatter_class=DefaultHelpFormatter,
+            description=cls.__description())
         cls.add_parser(parser)
         return parser
+
+    @classmethod
+    def __description(cls):
+        import textwrap
+        return textwrap.dedent(cls.__doc__) if cls.__doc__ else None
 
     @classmethod
     def add_parser(cls, parser):
@@ -156,8 +170,7 @@ class TraitsCLIBase(HasTraits):
             v = traits[k]
             dest = '--{0}'.format(k)
             argkwds = dict(default=v.default)
-            argkwds['help'] = ''.join(
-                ([v.desc, ' '] if v.desc else []) + ['(default: %(default)s)'])
+            argkwds['help'] = v.desc or ' '  # to force print default
             stype = trait_simple_type(v.trait_type)
             if stype:
                 argkwds['type'] = stype
@@ -254,7 +267,7 @@ def multi_command_cli(name_class_pairs, args=None, ArgumentParser=None):
 
     """
     ArgumentParser = name_class_pairs[0][1].ArgumentParser
-    parser = ArgumentParser()
+    parser = ArgumentParser(formatter_class=DefaultHelpFormatter)
     subpersers = parser.add_subparsers()
     for (name, cls) in name_class_pairs:
         cls.connect_subparser(subpersers, name)

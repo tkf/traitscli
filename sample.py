@@ -4,7 +4,16 @@ from traits.api import Bool, Float, Int, Str, Enum, Event
 
 class SampleCLI(TraitsCLIBase):
 
-    """Sample CLI using `traitscli`."""
+    """
+    Sample CLI using `traitscli`.
+
+    Example::
+
+      %(prog)s --yes                # => obj.yes = True
+      %(prog)s --string something   # => obj.string = 'string'
+      %(prog)s --choice x           # => raise error (x is not in {a, b, c})
+
+    """
 
     # These variables are configurable by command line option
     yes = Bool(desc='yes flag for sample CLI', config=True)
