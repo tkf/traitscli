@@ -219,7 +219,7 @@ class TraitsCLIBase(HasTraits):
         """
 
 
-def multi_command_cli(name_class_pairs, args=None):
+def multi_command_cli(name_class_pairs, args=None, ArgumentParser=None):
     """
     Launch CLI to call multiple classes.
 
@@ -231,8 +231,11 @@ def multi_command_cli(name_class_pairs, args=None):
           ('branch', DoBranch),
       ])
 
+    If `ArgumentParser` is not specified, `ArgumentParser` of the first
+    class will be used.
+
     """
-    from argparse import ArgumentParser
+    ArgumentParser = name_class_pairs[0][1].ArgumentParser
     parser = ArgumentParser()
     subpersers = parser.add_subparsers()
     for (name, cls) in name_class_pairs:
