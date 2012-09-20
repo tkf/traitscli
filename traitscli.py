@@ -80,6 +80,19 @@ class InvalidDictLikeOptionError(Exception):
         self.message
 
 
+def parse_and_run(parser, args=None):
+    if args is None:
+        import sys
+        args = sys.argv[1:]
+
+    (dopts, args) = parse_dict_like_options(args)
+    ns = parser.parse_args(args)
+    try:
+        return applyargs(__dict_like_options=dopts, **vars(ns))
+    except InvalidDictLikeOptionError as e:
+        parser.exit(e.message)
+
+
 class TraitsCLIBase(HasTraits):
 
     """
@@ -149,17 +162,8 @@ class TraitsCLIBase(HasTraits):
         When `args` is given, it is used instead of ``sys.argv[1:]``.
 
         """
-        if args is None:
-            import sys
-            args = sys.argv[1:]
-
-        (dopts, args) = parse_dict_like_options(args)
         parser = cls.get_argparser()
-        ns = parser.parse_args(args)
-        try:
-            return applyargs(__dict_like_options=dopts, **vars(ns))
-        except InvalidDictLikeOptionError as e:
-            parser.exit(e.message)
+        return parse_and_run(parser, args)
 
     @classmethod
     def run(cls, **kwds):
