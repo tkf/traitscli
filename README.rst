@@ -21,3 +21,20 @@ Usage::
    if __name__ == '__main__':
        # Run command line interface
        SampleCLI.cli()
+
+
+TODO
+----
+
+* Dict/List support.
+  Set dictionary/list value by ``--dict['key']=val``.
+
+* Nested class support.
+  Set attributes of nested class by ``--sub.attr=val``.
+
+* Upload this to PyPI.
+
+* Support `other predefined Traits listed here`__.
+
+__ http://docs.enthought.com/traits/traits_user_manual/defining.html
+   #other-predefined-traits
