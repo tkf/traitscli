@@ -115,8 +115,6 @@ TODO
 
 * Upload this to PyPI.
 
-* Support positional arguments.
-
 * Parameter file support (ini/conf, json, yaml, etc.).
   Load parameter from file then set attribute.
 
