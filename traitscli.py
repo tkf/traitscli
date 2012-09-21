@@ -12,6 +12,11 @@ Some benefits:
 * "Deep value"" configuration:
   e.g., ``--dict['a']['b']['c']=1`` is equivalent to
   ``obj.dict['a']['b']['c'] = 1`` in Python code.
+* Nested class configuration:
+  e.g., ``--sub.attr=val`` is equivalent to
+  ``obj.sub.attr = val`` in Python code.
+* Parameter file support (ini/conf, json, yaml, etc.).
+  Load parameter from file then set attribute.
 
 .. _traits: https://github.com/enthought/traits
 
@@ -110,15 +115,7 @@ Example run::
 TODO
 ----
 
-* Nested class support.
-  Set attributes of nested class by ``--sub.attr=val``.
-
 * Upload this to PyPI.
-
-* Support positional arguments.
-
-* Parameter file support (ini/conf, json, yaml, etc.).
-  Load parameter from file then set attribute.
 
 * Support `other predefined Traits listed here`__.
 
