@@ -110,14 +110,3 @@ Example run::
   sample.py: error: argument --inum: invalid int value: 'invalid_argument'
 
 .. [[[end]]]
-
-
-TODO
-----
-
-* Upload this to PyPI.
-
-* Support `other predefined Traits listed here`__.
-
-__ http://docs.enthought.com/traits/traits_user_manual/defining.html
-   #other-predefined-traits
