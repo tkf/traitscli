@@ -207,6 +207,9 @@ class InvalidDictLikeOptionError(Exception):
         self.message
 
 
+_UNSPECIFIED = object()
+
+
 def parse_and_run(parser, args=None):
     """
     Parse command line `args` using `parser` and run function of it.
@@ -231,7 +234,12 @@ def parse_and_run(parser, args=None):
         args = sys.argv[1:]
 
     def applyargs(func, **kwds):
-        return func(**kwds)
+        # Strip off unspecified arguments so that attributes set by
+        # parameter file will not be override default values.
+        # See `TraitsCLIBase.run` (actually, it's `func` here) for
+        # the timing of `TraitsCLIBase.load_paramfile`.
+        return func(**dict((k, v) for (k, v) in kwds.iteritems()
+                           if v is not _UNSPECIFIED))
 
     (dopts, args) = parse_dict_like_options(args)
     ns = parser.parse_args(args)
@@ -239,11 +247,6 @@ def parse_and_run(parser, args=None):
         return applyargs(__dict_like_options=dopts, **vars(ns))
     except InvalidDictLikeOptionError as e:
         parser.exit(e.message)
-
-
-class DefaultHelpFormatter(argparse.RawDescriptionHelpFormatter,
-                           argparse.ArgumentDefaultsHelpFormatter):
-    pass
 
 
 def splitdottedname(dottedname):
@@ -459,7 +462,7 @@ class TraitsCLIBase(HasTraits):
     @classmethod
     def get_argparser(cls):
         parser = cls.ArgumentParser(
-            formatter_class=DefaultHelpFormatter,
+            formatter_class=argparse.RawDescriptionHelpFormatter,
             description=cls.__description())
         cls.add_parser(parser)
         return parser
@@ -486,10 +489,11 @@ class TraitsCLIBase(HasTraits):
                 continue
 
             dest = name = '{0}{1}'.format(prefix, k)
-            argkwds = dict(default=v.default, help=v.desc)
+            argkwds = dict(
+                help='{0} (default: {1})'.format(v.desc or '', v.default),
+            )
             if not v.cli_positional:
                 name = '--{0}'.format(dest)
-                argkwds['help'] = v.desc or ' '  # to force print default
             for arg_key in ['required', 'metavar']:
                 attr_val = getattr(v, 'cli_{0}'.format(arg_key))
                 if attr_val is not None:
@@ -501,14 +505,13 @@ class TraitsCLIBase(HasTraits):
                  not v.cli_positional:
                 argkwds.update(
                     action='store_const',
-                    default=v.trait_type.default_value,
                     const=not v.trait_type.default_value,
                 )
             elif isinstance(v.trait_type, Enum):
                 argkwds['choices'] = v.trait_type.values
             else:
                 argkwds['type'] = eval
-            parser.add_argument(name, **argkwds)
+            parser.add_argument(name, default=_UNSPECIFIED, **argkwds)
         parser.set_defaults(func=cls.run)
         return parser
 
@@ -626,7 +629,8 @@ def multi_command_cli(name_class_pairs, args=None, ArgumentParser=None):
 
     """
     ArgumentParser = name_class_pairs[0][1].ArgumentParser
-    parser = ArgumentParser(formatter_class=DefaultHelpFormatter)
+    parser = ArgumentParser(
+        formatter_class=argparse.RawDescriptionHelpFormatter)
     subpersers = parser.add_subparsers()
     for (name, cls) in name_class_pairs:
         cls.connect_subparser(subpersers, name)
