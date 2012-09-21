@@ -312,6 +312,26 @@ class TraitsCLIBase(HasTraits):
        `cli` function sets attributes based on command line options
        and then call `do_run` method.
 
+
+    Metadata for traits
+
+    config : bool
+       If metadata is True, this attribute is configurable via CLI.
+
+    desc : string
+       Description of this attribute.  Passed to `help` argument
+       of `ArgumentParser.add_argument`.
+
+    cli_positional : bool (default: False)
+       If True, corresponding command line argument is interpreted
+       as a positional argument.
+
+    cli_required : bool
+       Passed to `required` argument of `ArgumentParser.add_argument`
+
+    cli_metavar : str
+       Passed to `metavar` argument of `ArgumentParser.add_argument`
+
     """
 
     ArgumentParser = argparse.ArgumentParser
@@ -354,9 +374,15 @@ class TraitsCLIBase(HasTraits):
                 # but as there is no harm, let it be like this for now.
                 continue
 
-            dest = '--{0}{1}'.format(prefix, k)
+            dest = name = '{0}{1}'.format(prefix, k)
+            if not v.cli_positional:
+                name = '--{0}'.format(dest)
             argkwds = dict(default=v.default)
             argkwds['help'] = v.desc or ' '  # to force print default
+            for arg_key in ['required', 'metavar']:
+                attr_val = getattr(v, 'cli_{0}'.format(arg_key))
+                if attr_val is not None:
+                    argkwds[arg_key] = attr_val
             stype = trait_simple_type(v.trait_type)
             if stype:
                 argkwds['type'] = stype
@@ -370,7 +396,7 @@ class TraitsCLIBase(HasTraits):
                 argkwds['choices'] = v.trait_type.values
             else:
                 argkwds['type'] = eval
-            parser.add_argument(dest, **argkwds)
+            parser.add_argument(name, **argkwds)
         parser.set_defaults(func=cls.run)
         return parser
 
