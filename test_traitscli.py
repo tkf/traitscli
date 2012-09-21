@@ -51,6 +51,11 @@ class TestCaseBase(unittest.TestCase):
         ret = self.cliclass.cli(args)
         self.assertEqual(ret.attributes, attributes)
 
+    def test_call_format_help(self):
+        if self.cliclass:
+            parser = self.cliclass.get_argparser()
+            parser.format_help()
+
 
 class TestSampleCLI(TestCaseBase):
 
