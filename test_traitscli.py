@@ -51,6 +51,13 @@ class TestCaseBase(unittest.TestCase):
     cliclass = None
     """Subclass of `TraitsCLIBase`."""
 
+    def run_cli(self, args):
+        return self.cliclass.cli(args)
+
+    def assert_invalid_args(self, args):
+        self.assertRaises(ArgumentParserExitCalled,
+                          self.run_cli, args)
+
     def assert_attributes(self, attributes, args=[]):
         ret = self.cliclass.cli(args)
         self.assertEqual(ret.attributes, attributes)
@@ -155,7 +162,7 @@ class TestDictLikeOptions(TestCaseBase):
                           self.cliclass.cli, ['--invalid["k"]', 'x'])
 
 
-class TestMultiCommandCLI(unittest.TestCase):
+class TestMultiCommandCLI(TestCaseBase):
 
     class cliclass_1(TestingCLIBase):
         int = Int(config=True)
@@ -165,22 +172,18 @@ class TestMultiCommandCLI(unittest.TestCase):
         float = Float(config=True)
         list = List(config=True)
 
-    def run_multi_command_cli(self, args):
+    def run_cli(self, args):
         pairs = [('cmd_1', self.cliclass_1),
                  ('cmd_2', self.cliclass_2)]
         return multi_command_cli(pairs, args)
 
     def test_run_1_empty_args(self):
-        ret = self.run_multi_command_cli(['cmd_1'])
+        ret = self.run_cli(['cmd_1'])
         self.assertTrue(isinstance(ret, self.cliclass_1))
 
     def test_run_2_empty_args(self):
-        ret = self.run_multi_command_cli(['cmd_2'])
+        ret = self.run_cli(['cmd_2'])
         self.assertTrue(isinstance(ret, self.cliclass_2))
-
-    def assert_invalid_args(self, args):
-        self.assertRaises(ArgumentParserExitCalled,
-                          self.run_multi_command_cli, args)
 
     def test_invalid_args(self):
         self.assert_invalid_args(['--invalid', 'x'])  # no sub-command
