@@ -201,10 +201,14 @@ def names_in_dict_like_options(dopts):
     return [k.split('[', 1)[0] for (k, v) in dopts]
 
 
-class InvalidDictLikeOptionError(Exception):
+class TraitsCLIAttributeError(Exception):
 
     def __init__(self, message):
         self.message
+
+
+class InvalidDictLikeOptionError(TraitsCLIAttributeError):
+    pass
 
 
 _UNSPECIFIED = object()
@@ -245,7 +249,7 @@ def parse_and_run(parser, args=None):
     ns = parser.parse_args(args)
     try:
         return applyargs(__dict_like_options=dopts, **vars(ns))
-    except InvalidDictLikeOptionError as e:
+    except TraitsCLIAttributeError as e:
         parser.exit(e.message)
 
 
