@@ -1,7 +1,11 @@
 from argparse import ArgumentParser
 import unittest
 
-from traits.api import Event, Callable, Type, Dict, List, Int, Float, Instance
+from traits.api import (
+    Int, Float, Bool, List, Dict,
+    Instance, Callable, Type,
+    Event,
+)
 
 from traitscli import TraitsCLIBase, multi_command_cli
 from sample import SampleCLI
@@ -283,3 +287,19 @@ class TestMetaDataCLI(TestCaseBase):
                           self.cliclass.cli, ['--c', '2'])
         self.assertRaises(ArgumentParserExitCalled,
                           self.cliclass.cli, ['--invalid', 'x'])
+
+
+class TestPositionalBooleanCLI(TestCaseBase):
+
+    class cliclass(TestingCLIBase):
+        a = Bool(cli_positional=True, config=True)
+
+    def test_minimal_args(self):
+        self.assert_attributes(dict(a=True), ['True'])
+        self.assert_attributes(dict(a=False), ['False'])
+
+    def test_invalid_args(self):
+        self.assertRaises(ArgumentParserExitCalled,
+                          self.cliclass.cli, [])
+        self.assertRaises(ArgumentParserExitCalled,
+                          self.cliclass.cli, ['1', '2'])
