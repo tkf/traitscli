@@ -338,3 +338,8 @@ class TestParamFileCLI(TestCaseBase):
                     float=1.0,
                 ),
                 ['--paramfile', 'param.dummy'])
+
+    def test_invalid_paramfile(self):
+        with self.dummy_loader(['param.dummy'],
+                               [dict(invalid='x')]):
+            self.assert_invalid_args(['--paramfile', 'param.dummy'])
