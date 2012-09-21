@@ -192,18 +192,12 @@ class TestMultiCommandCLI(TestCaseBase):
 
 class TestDottedName(unittest.TestCase):
 
-    def setUp(self):
-        # Doing this as "class context" yields an name error
-
+    class cliclass(TraitsCLIBase):
         class subcliclass(TraitsCLIBase):
             int = Int
-
-        class cliclass(TraitsCLIBase):
-            int = Int
-            sub = Instance(subcliclass, args=())
-
-        self.subcliclass = subcliclass
-        self.cliclass = cliclass
+        int = Int
+        sub = Instance(subcliclass, args=())
+    subcliclass = cliclass.subcliclass
 
     def make_instance(self, kwds):
         return self.cliclass(**kwds)
