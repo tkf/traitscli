@@ -129,6 +129,10 @@ class TestEvalType(TestCaseBase):
              '--type', 'int',
             ])
 
+    def test_invalid_args(self):
+        self.assert_invalid_args(['--invalid', 'x'])
+        self.assert_invalid_args(['--callable', 'undefined_name'])
+
 
 class TestDictLikeOptions(TestCaseBase):
 

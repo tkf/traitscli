@@ -246,11 +246,19 @@ def parse_and_run(parser, args=None):
                            if v is not _UNSPECIFIED))
 
     (dopts, args) = parse_dict_like_options(args)
-    ns = parser.parse_args(args)
     try:
+        ns = parser.parse_args(args)
         return applyargs(__dict_like_options=dopts, **vars(ns))
     except TraitsCLIAttributeError as e:
         parser.exit(e.message)
+
+
+def eval_for_parser(code):
+    try:
+        return eval(code)
+    except NameError as e:
+        raise TraitsCLIAttributeError(
+            'Got {0!r} wile evaluating {1}'.format(e, code))
 
 
 def splitdottedname(dottedname):
@@ -514,7 +522,7 @@ class TraitsCLIBase(HasTraits):
             elif isinstance(v.trait_type, Enum):
                 argkwds['choices'] = v.trait_type.values
             else:
-                argkwds['type'] = eval
+                argkwds['type'] = eval_for_parser
             parser.add_argument(name, default=_UNSPECIFIED, **argkwds)
         parser.set_defaults(func=cls.run)
         return parser
