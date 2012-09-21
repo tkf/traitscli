@@ -301,15 +301,7 @@ class TestPositionalBooleanCLI(TestCaseBase):
         self.assert_invalid_args(['1', '2'])
 
 
-class TestParamFileCLI(TestCaseBase):
-
-    class cliclass(TestingCLIBase):
-        str = Str(config=True)
-        int = Int(config=True)
-        float = Float(config=True)
-        paramfile = Str(cli_paramfile=True, config=True)
-
-        paramfile_loader = {}
+class ParamFileTestingMixIn(object):
 
     @contextmanager
     def dummy_loader(self, paths, params):
@@ -323,6 +315,17 @@ class TestParamFileCLI(TestCaseBase):
         yield
         del self.cliclass.paramfile_loader['dummy']
         self.assertEqual(paths, [])
+
+
+class TestParamFileCLI(TestCaseBase, ParamFileTestingMixIn):
+
+    class cliclass(TestingCLIBase):
+        str = Str(config=True)
+        int = Int(config=True)
+        float = Float(config=True)
+        paramfile = Str(cli_paramfile=True, config=True)
+
+        paramfile_loader = {}
 
     def test_minimal_args(self):
         self.assert_attributes(dict(
@@ -347,4 +350,25 @@ class TestParamFileCLI(TestCaseBase):
     def test_invalid_paramfile(self):
         with self.dummy_loader(['param.dummy'],
                                [dict(invalid='x')]):
+            self.assert_invalid_args(['--paramfile', 'param.dummy'])
+
+
+class TestNestedParamFileCLI(TestCaseBase, ParamFileTestingMixIn):
+
+    class cliclass(TestingCLIBase):
+        class subcliclass(TestingCLIBase):
+            class subcliclass2(TestingCLIBase):
+                int = Int(config=True)
+            int = Int(config=True)
+            sub2 = Instance(subcliclass2, args=(), config=True)
+        int = Int(config=True)
+        sub = Instance(subcliclass, args=(), config=True)
+        ncsub = Instance(subcliclass, args=())  # non-configurable
+        paramfile = Str(cli_paramfile=True, config=True)
+
+        paramfile_loader = {}
+
+    def test_invalid_paramfile(self):
+        with self.dummy_loader(['param.dummy'],
+                               [dict(ncsub=dict(int=1))]):
             self.assert_invalid_args(['--paramfile', 'param.dummy'])

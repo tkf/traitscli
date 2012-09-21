@@ -448,13 +448,14 @@ class TraitsCLIBase(HasTraits):
         """
         for name in sorted(attrs):  # set shallower attributes first
             value = attrs[name]
+            if only_configurable and not self.is_configurable(name):
+                raise TraitsCLIAttributeError(
+                    'Non-configurable key is given: {0}'.format(name))
+
             current = getattr(self, name, None)
             if isinstance(value, dict) and isinstance(current, TraitsCLIBase):
                 current.setattrs(value)
             else:
-                if only_configurable and not self.is_configurable(name):
-                    raise TraitsCLIAttributeError(
-                        'Non-configurable key is given: {0}'.format(name))
                 setdottedattr(self, name, value)
 
     @classmethod
