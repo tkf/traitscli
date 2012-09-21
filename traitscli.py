@@ -534,14 +534,23 @@ class TraitsCLIBase(HasTraits):
         """
         dopts = kwds.pop('__dict_like_options', [])
         (kwds_paramfile, kwds_rest) = cls.__classify_kwds(kwds)
+
         self = cls(**kwds_paramfile)
-        self.load_paramfile()
-        self.setattrs(kwds_rest)
-        self.__eval_dict_like_options(dopts)
+        self.load_paramfile()                  # from file
+        self.setattrs(kwds_rest)               # normal command line options
+        self.__eval_dict_like_options(dopts)   # dict-like options
+
         self.do_run()
         return self
 
     def load_paramfile(self):
+        """
+        Load attributes from parameter file.
+
+        Path of parameter file is defined by attributes whose
+        metadata `cli_paramfile` is True.
+
+        """
         for v in self.config(cli_paramfile=True).itervalues():
             if not v:
                 continue
@@ -558,6 +567,14 @@ class TraitsCLIBase(HasTraits):
         ini=load_conf,
         py=load_py,
     )
+    """
+    File loader functions.
+
+    This is a map from file extensions to loader functions.
+    Loader function takes only one argument `path` and must
+    return a `dict`.
+
+    """
 
     def _load_paramfile(self, path):
         ext = os.path.splitext(path)[-1][1:].lower()
