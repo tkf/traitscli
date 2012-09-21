@@ -156,6 +156,7 @@ class TestDictLikeOptions(TestCaseBase):
     def test_invalid_args(self):
         self.assert_invalid_args(['--invalid', 'x'])
         self.assert_invalid_args(['--invalid["k"]', 'x'])
+        self.assert_invalid_args(['--dict[undefined_name]', '"x"'])
 
 
 class TestMultiCommandCLI(TestCaseBase):

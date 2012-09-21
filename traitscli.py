@@ -594,7 +594,12 @@ class TraitsCLIBase(HasTraits):
         for (rhs, lhs) in dopts:
             # TODO: Check that rhs/lhs really an expression, rather
             #       than code containing ";" or "\n".
-            exec '{0} = {1}'.format(rhs, lhs) in ns
+            try:
+                exec '{0} = {1}'.format(rhs, lhs) in ns
+            except NameError as e:
+                raise TraitsCLIAttributeError(
+                    'Got {0!r} wile evaluating --{1}={2}'.format(
+                        e, rhs, lhs))
 
     @classmethod
     def is_configurable(cls, dottedname):
