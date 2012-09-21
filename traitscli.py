@@ -128,6 +128,8 @@ __ http://docs.enthought.com/traits/traits_user_manual/defining.html
 """
 # [[[end]]]
 
+import os
+import re
 import argparse
 
 from traits.api import (
@@ -295,6 +297,89 @@ def setdottedattr(object, dottedname, value):
     setattr(getdottedattr(object, names[:-1]), names[-1], value)
 
 
+def load_json(path):
+    import json
+    with open(path) as file:
+        return json.load(file)
+
+
+def load_yaml(path):
+    import yaml
+    with open(path) as file:
+        return yaml.load(file)
+
+
+def load_conf(path):
+    import ConfigParser
+    config = ConfigParser.ConfigParser()
+    with open(path) as file:
+        config.readfp(file)
+    sections = config.sections()
+    if len(sections) == 1:
+        return dict(config.items(sections[0]))
+    else:
+        dct = {}
+        join = '{0}.{1}'.format
+        for sect in sections:
+            for (k, v) in config.items(sect):
+                dct[join(sect, k)] = v
+        return dct
+
+
+def load_py(path):
+    param = {}
+    execfile(path, param)
+    return cleanup_dict(param)
+
+
+def cleanup_dict(dct,
+                 allow=re.compile('^[a-zA-Z_][a-zA-Z0-9_]*$'),
+                 deny=re.compile('^_.*_$')):
+    """
+    Clean up dictionary using allowed and denied regular expression of
+    keys.
+
+    >>> d = {'a':1, 'b':2, '0':3 , '__hidden__':4}
+    >>> dnew = cleanup_dict(d)
+    >>> sorted(dnew)
+    ['a', 'b']
+    >>> [dnew[k] for k in sorted(dnew)]
+    [1, 2]
+    >>> dnew = cleanup_dict(d, allow=None)
+    >>> sorted(dnew)
+    ['0', 'a', 'b']
+    >>> [dnew[k] for k in sorted(dnew)]
+    [3, 1, 2]
+    >>> dnew = cleanup_dict(d, deny=None)
+    >>> sorted(dnew)
+    ['__hidden__', 'a', 'b']
+    >>> [dnew[k] for k in sorted(dnew)]
+    [4, 1, 2]
+    >>> dnew = cleanup_dict(d, allow='a|0')
+    >>> sorted(dnew)
+    ['0', 'a']
+    >>> [dnew[k] for k in sorted(dnew)]
+    [3, 1]
+
+    """
+    if isinstance(allow, basestring):
+        allow = re.compile(allow)
+    if isinstance(deny, basestring):
+        deny = re.compile(deny)
+    if allow is None:
+        isallowed = lambda x: True
+    else:
+        isallowed = allow.match
+    if deny is None:
+        isdenied = lambda x: False
+    else:
+        isdenied = deny.match
+
+    return dict([
+        (k, dct[k]) for k in dct
+        if isinstance(k, basestring) and isallowed(k) and not isdenied(k)])
+
+
 class TraitsCLIBase(HasTraits):
 
     """
@@ -331,6 +416,13 @@ class TraitsCLIBase(HasTraits):
 
     cli_metavar : str
        Passed to `metavar` argument of `ArgumentParser.add_argument`
+
+    cli_paramfile : bool
+       This attribute has special meaning.  When this metadata is
+       True, this attribute indicate the path to parameter file The
+       instance is first initialized using parameters defined in the
+       parameter file, then command line arguments are used to
+       override the parameters.
 
     """
 
@@ -440,10 +532,43 @@ class TraitsCLIBase(HasTraits):
         Make an instance of this class with args `kwds` and call `do_run`.
         """
         dopts = kwds.pop('__dict_like_options', [])
-        self = cls(**kwds)
+        (kwds_paramfile, kwds_rest) = cls.__classify_kwds(kwds)
+        self = cls(**kwds_paramfile)
+        self.load_paramfile()
+        self.setattrs(kwds_rest)
         self.__eval_dict_like_options(dopts)
         self.do_run()
         return self
+
+    def load_paramfile(self):
+        for v in self.config(cli_paramfile=True).itervalues():
+            if isinstance(v, (list, tuple)):
+                for path in v:
+                    self._load_paramfile(path)
+            else:
+                self._load_paramfile(v)
+
+    paramfile_loader = dict(
+        json=load_json,
+        yaml=load_yaml,
+        conf=load_conf,
+        ini=load_conf,
+        py=load_py,
+    )
+
+    def _load_paramfile(self, path):
+        ext = os.path.splitext(path)[-1][1:].lower()
+        param = self.paramfile_loader[ext](path)
+        self.setattrs(param)
+
+    @classmethod
+    def __classify_kwds(cls, kwds):
+        kwds_paramfile = {}
+        kwds_rest = kwds.copy()
+        for k in cls.config_names(cli_paramfile=True):
+            if k in kwds_rest:
+                kwds_paramfile[k] = kwds_rest.pop(k)
+        return (kwds_paramfile, kwds_rest)
 
     def __eval_dict_like_options(self, dopts):
         ns = self.config()

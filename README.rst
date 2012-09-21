@@ -13,6 +13,8 @@ Some benefits:
 * Nested class configuration:
   e.g., ``--sub.attr=val`` is equivalent to
   ``obj.sub.attr = val`` in Python code.
+* Parameter file support (ini/conf, json, yaml, etc.).
+  Load parameter from file then set attribute.
 
 .. _traits: https://github.com/enthought/traits
 
@@ -114,9 +116,6 @@ TODO
 ----
 
 * Upload this to PyPI.
-
-* Parameter file support (ini/conf, json, yaml, etc.).
-  Load parameter from file then set attribute.
 
 * Support `other predefined Traits listed here`__.
 
