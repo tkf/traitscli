@@ -193,6 +193,7 @@ def names_in_dict_like_options(dopts):
 class TraitsCLIAttributeError(Exception):
 
     def __init__(self, message):
+        self.args = (message,)
         self.message
 
 
