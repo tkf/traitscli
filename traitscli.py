@@ -369,7 +369,7 @@ class TraitsCLIBase(HasTraits):
 
             if (isinstance(v.trait_type, Instance) and
                 issubclass(v.trait_type.klass, TraitsCLIBase)):
-                v.trait_type.klass.add_parser(parser, k + '.')
+                v.trait_type.klass.add_parser(parser, prefix + k + '.')
                 # set_defaults is called here and it's redundant...
                 # but as there is no harm, let it be like this for now.
                 continue

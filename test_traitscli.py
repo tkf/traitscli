@@ -229,30 +229,37 @@ class TestNestedCLI(TestCaseBase):
 
     class cliclass(TestingCLIBase):
         class subcliclass(TestingCLIBase):
+            class subcliclass2(TestingCLIBase):
+                int = Int(config=True)
             int = Int(config=True)
+            sub2 = Instance(subcliclass2, args=(), config=True)
         int = Int(config=True)
         sub = Instance(subcliclass, args=(), config=True)
 
     def test_empty_args(self):
         self.assert_attributes(dict(
             int=0,
-            sub=dict(int=0),
+            sub=dict(int=0,
+                     sub2=dict(int=0)),
         ))
 
     def test_full_args(self):
         self.assert_attributes(
             dict(
                 int=1,
-                sub=dict(int=2),
+                sub=dict(int=2,
+                         sub2=dict(int=3)),
             ),
             ["--int=1",
              "--sub.int=2",
+             "--sub.sub2.int=3",
             ])
 
     def test_invalid_args(self):
         self.assert_invalid_args(['--invalid', 'x'])
         self.assert_invalid_args(['--invalid["k"]', 'x'])
         self.assert_invalid_args(['--sub', 'x'])
+        self.assert_invalid_args(['--sub.sub2', 'x'])
 
 
 class TestMetaDataCLI(TestCaseBase):
