@@ -249,3 +249,32 @@ class TestNestedCLI(TestCaseBase):
                           self.cliclass.cli, ['--invalid["k"]', 'x'])
         self.assertRaises(ArgumentParserExitCalled,
                           self.cliclass.cli, ['--sub', 'x'])
+
+
+class TestMetaDataCLI(TestCaseBase):
+
+    class cliclass(TestingCLIBase):
+        a = Int(config=True)
+        b = Int(cli_positional=True, config=True)
+        c = Int(cli_required=True, config=True)
+        d = Int(cli_metavar='X', config=True)
+
+    def test_minimal_args(self):
+        self.assert_attributes(
+            dict(
+                a=0,
+                b=1,
+                c=2,
+                d=0,
+            ),
+            ['1', '--c', '2'])
+
+    def test_invalid_args(self):
+        self.assertRaises(ArgumentParserExitCalled,
+                          self.cliclass.cli, [])
+        self.assertRaises(ArgumentParserExitCalled,
+                          self.cliclass.cli, ['1'])
+        self.assertRaises(ArgumentParserExitCalled,
+                          self.cliclass.cli, ['--c', '2'])
+        self.assertRaises(ArgumentParserExitCalled,
+                          self.cliclass.cli, ['--invalid', 'x'])
