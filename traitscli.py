@@ -436,27 +436,27 @@ class TraitsCLIBase(HasTraits):
         super(TraitsCLIBase, self).__init__()
         self.setattrs(kwds)
 
-    def setattrs(self, *args, **kwds):
+    def setattrs(self, attrs, only_configurable=False):
         """
-        Set attribute given a dictionary.
+        Set attribute given a dictionary `attrs`.
 
-        Call signature of this function is same as `dict`.
-
-        Keys of the dict can be dot-separated name.  In this case,
+        Keys of `attrs` can be dot-separated name.  In this case,
         nested attribute will be set to its attribute.
 
-        The value of dict can be a dict.  If the corresponding
+        The values of `attrs` can be a dict.  If the corresponding
         attribute is an instance of `TraitsCLIBase`, attributes
         of this instance is set using this dictionary.
 
         """
-        attrs = dict(*args, **kwds)
         for name in sorted(attrs):  # set shallower attributes first
             value = attrs[name]
             current = getattr(self, name, None)
             if isinstance(value, dict) and isinstance(current, TraitsCLIBase):
                 current.setattrs(value)
             else:
+                if only_configurable and not self.is_configurable(name):
+                    raise TraitsCLIAttributeError(
+                        'Non-configurable key is given: {0}'.format(name))
                 setdottedattr(self, name, value)
 
     @classmethod
@@ -565,7 +565,12 @@ class TraitsCLIBase(HasTraits):
     def _load_paramfile(self, path):
         ext = os.path.splitext(path)[-1][1:].lower()
         param = self.paramfile_loader[ext](path)
-        self.setattrs(param)
+        try:
+            self.setattrs(param, only_configurable=True)
+        except TraitsCLIAttributeError as e:
+            raise TraitsCLIAttributeError(
+                "Error while loading file {0}: {1}"
+                .format(path, e.message))
 
     @classmethod
     def __classify_kwds(cls, kwds):
@@ -590,6 +595,22 @@ class TraitsCLIBase(HasTraits):
             # TODO: Check that rhs/lhs really an expression, rather
             #       than code containing ";" or "\n".
             exec '{0} = {1}'.format(rhs, lhs) in ns
+
+    @classmethod
+    def is_configurable(cls, dottedname):
+        names = dottedname.split('.', 1)
+        head = names[0]
+        traits = cls.class_traits(config=True)
+        if head not in traits:
+            return False
+        if len(names) == 1:
+            return True
+        tail = names[1]
+        trait_type = traits[head].trait_type
+        if (isinstance(trait_type, Instance) and
+            issubclass(trait_type.klass, TraitsCLIBase)):
+            return trait_type.klass.is_configurable(tail)
+        return False
 
     @classmethod
     def config_names(cls, **metadata):
