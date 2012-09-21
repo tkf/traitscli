@@ -340,10 +340,28 @@ class TraitsCLIBase(HasTraits):
         super(TraitsCLIBase, self).__init__()
         self.setattrs(kwds)
 
-    def setattrs(self, attrs):
+    def setattrs(self, *args, **kwds):
+        """
+        Set attribute given a dictionary.
+
+        Call signature of this function is same as `dict`.
+
+        Keys of the dict can be dot-separated name.  In this case,
+        nested attribute will be set to its attribute.
+
+        The value of dict can be a dict.  If the corresponding
+        attribute is an instance of `TraitsCLIBase`, attributes
+        of this instance is set using this dictionary.
+
+        """
+        attrs = dict(*args, **kwds)
         for name in sorted(attrs):  # set shallower attributes first
             value = attrs[name]
-            setdottedattr(self, name, value)
+            current = getattr(self, name, None)
+            if isinstance(value, dict) and isinstance(current, TraitsCLIBase):
+                current.setattrs(value)
+            else:
+                setdottedattr(self, name, value)
 
     @classmethod
     def connect_subparser(cls, subpersers, name):
