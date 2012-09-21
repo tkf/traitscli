@@ -375,10 +375,10 @@ class TraitsCLIBase(HasTraits):
                 continue
 
             dest = name = '{0}{1}'.format(prefix, k)
+            argkwds = dict(default=v.default, help=v.desc)
             if not v.cli_positional:
                 name = '--{0}'.format(dest)
-            argkwds = dict(default=v.default)
-            argkwds['help'] = v.desc or ' '  # to force print default
+                argkwds['help'] = v.desc or ' '  # to force print default
             for arg_key in ['required', 'metavar']:
                 attr_val = getattr(v, 'cli_{0}'.format(arg_key))
                 if attr_val is not None:
