@@ -386,7 +386,8 @@ class TraitsCLIBase(HasTraits):
             stype = trait_simple_type(v.trait_type)
             if stype:
                 argkwds['type'] = stype
-            elif isinstance(v.trait_type, (Bool, CBool)):
+            elif isinstance(v.trait_type, (Bool, CBool)) and \
+                 not v.cli_positional:
                 argkwds.update(
                     action='store_const',
                     default=v.trait_type.default_value,
