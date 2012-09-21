@@ -539,6 +539,8 @@ class TraitsCLIBase(HasTraits):
 
     def load_paramfile(self):
         for v in self.config(cli_paramfile=True).itervalues():
+            if not v:
+                continue
             if isinstance(v, (list, tuple)):
                 for path in v:
                     self._load_paramfile(path)

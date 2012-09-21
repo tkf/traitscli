@@ -1,8 +1,9 @@
 from argparse import ArgumentParser
 import unittest
+from contextlib import contextmanager
 
 from traits.api import (
-    Int, Float, Bool, List, Dict,
+    Str, Int, Float, Bool, List, Dict,
     Instance, Callable, Type,
     Event,
 )
@@ -293,3 +294,47 @@ class TestPositionalBooleanCLI(TestCaseBase):
     def test_invalid_args(self):
         self.assert_invalid_args([])
         self.assert_invalid_args(['1', '2'])
+
+
+class TestParamFileCLI(TestCaseBase):
+
+    class cliclass(TestingCLIBase):
+        str = Str(config=True)
+        int = Int(config=True)
+        float = Float(config=True)
+        paramfile = Str(cli_paramfile=True, config=True)
+
+        paramfile_loader = {}
+
+    @contextmanager
+    def dummy_loader(self, paths, params):
+        self.assertEqual(len(paths), len(params))
+
+        def dummy_loader(x):
+            self.assertEqual(x, paths.pop())
+            return params.pop()
+
+        self.cliclass.paramfile_loader['dummy'] = dummy_loader
+        yield
+        del self.cliclass.paramfile_loader['dummy']
+        self.assertEqual(paths, [])
+
+    def test_minimal_args(self):
+        self.assert_attributes(dict(
+            paramfile='',
+            str='',
+            int=0,
+            float=0.0,
+        ))
+
+    def test_load_paramfile(self):
+        with self.dummy_loader(['param.dummy'],
+                               [dict(str='a', int=1, float=1.0)]):
+            self.assert_attributes(
+                dict(
+                    paramfile='param.dummy',
+                    str='a',
+                    int=1,
+                    float=1.0,
+                ),
+                ['--paramfile', 'param.dummy'])
