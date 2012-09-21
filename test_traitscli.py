@@ -103,16 +103,13 @@ class TestSampleCLI(TestCaseBase):
             ])
 
     def test_invalid_type_int(self):
-        self.assertRaises(ArgumentParserExitCalled,
-                          self.cliclass.cli, ['--inum', 'x'])
+        self.assert_invalid_args(['--inum', 'x'])
 
     def test_invalid_type_float(self):
-        self.assertRaises(ArgumentParserExitCalled,
-                          self.cliclass.cli, ['--fnum', 'x'])
+        self.assert_invalid_args(['--fnum', 'x'])
 
     def test_invalid_type_enum(self):
-        self.assertRaises(ArgumentParserExitCalled,
-                          self.cliclass.cli, ['--choice', 'x'])
+        self.assert_invalid_args(['--choice', 'x'])
 
 
 class TestEvalType(TestCaseBase):
@@ -156,10 +153,8 @@ class TestDictLikeOptions(TestCaseBase):
             ])
 
     def test_invalid_args(self):
-        self.assertRaises(ArgumentParserExitCalled,
-                          self.cliclass.cli, ['--invalid', 'x'])
-        self.assertRaises(ArgumentParserExitCalled,
-                          self.cliclass.cli, ['--invalid["k"]', 'x'])
+        self.assert_invalid_args(['--invalid', 'x'])
+        self.assert_invalid_args(['--invalid["k"]', 'x'])
 
 
 class TestMultiCommandCLI(TestCaseBase):
@@ -255,12 +250,9 @@ class TestNestedCLI(TestCaseBase):
             ])
 
     def test_invalid_args(self):
-        self.assertRaises(ArgumentParserExitCalled,
-                          self.cliclass.cli, ['--invalid', 'x'])
-        self.assertRaises(ArgumentParserExitCalled,
-                          self.cliclass.cli, ['--invalid["k"]', 'x'])
-        self.assertRaises(ArgumentParserExitCalled,
-                          self.cliclass.cli, ['--sub', 'x'])
+        self.assert_invalid_args(['--invalid', 'x'])
+        self.assert_invalid_args(['--invalid["k"]', 'x'])
+        self.assert_invalid_args(['--sub', 'x'])
 
 
 class TestMetaDataCLI(TestCaseBase):
@@ -282,14 +274,10 @@ class TestMetaDataCLI(TestCaseBase):
             ['1', '--c', '2'])
 
     def test_invalid_args(self):
-        self.assertRaises(ArgumentParserExitCalled,
-                          self.cliclass.cli, [])
-        self.assertRaises(ArgumentParserExitCalled,
-                          self.cliclass.cli, ['1'])
-        self.assertRaises(ArgumentParserExitCalled,
-                          self.cliclass.cli, ['--c', '2'])
-        self.assertRaises(ArgumentParserExitCalled,
-                          self.cliclass.cli, ['--invalid', 'x'])
+        self.assert_invalid_args([])
+        self.assert_invalid_args(['1'])
+        self.assert_invalid_args(['--c', '2'])
+        self.assert_invalid_args(['--invalid', 'x'])
 
 
 class TestPositionalBooleanCLI(TestCaseBase):
@@ -302,7 +290,5 @@ class TestPositionalBooleanCLI(TestCaseBase):
         self.assert_attributes(dict(a=False), ['False'])
 
     def test_invalid_args(self):
-        self.assertRaises(ArgumentParserExitCalled,
-                          self.cliclass.cli, [])
-        self.assertRaises(ArgumentParserExitCalled,
-                          self.cliclass.cli, ['1', '2'])
+        self.assert_invalid_args([])
+        self.assert_invalid_args(['1', '2'])
