@@ -117,6 +117,7 @@ Example run::
 import os
 import re
 import argparse
+import ast
 
 from traits.api import (
     HasTraits, Bool, CBool, Complex, CComplex, Float, CFloat,
@@ -246,6 +247,50 @@ def parse_and_run(parser, args=None):
         return applyargs(__dict_like_options=dopts, **vars(ns))
     except TraitsCLIAttributeError as e:
         parser.exit(e.message)
+
+
+def assert_expr(code, valuetype=ast.expr):
+    """
+    Raise an error when `code` is not an expression.
+
+    >>> assert_expr('0')
+    >>> assert_expr('a[1]')
+    >>> assert_expr('a[1] + b.c')
+    >>> assert_expr('a; b')  #doctest: +NORMALIZE_WHITESPACE
+    Traceback (most recent call last):
+      ...
+    TraitsCLIAttributeError: 2 nodes (> 1) in code `a; b`.
+    Only one expression is allowed.
+    >>> assert_expr('print 1')  #doctest: +NORMALIZE_WHITESPACE
+    Traceback (most recent call last):
+      ...
+    TraitsCLIAttributeError: `print 1` is not an expression.
+    Only expression is allowed.
+    >>> assert_expr('1 + 2', ast.Subscript)  #doctest: +NORMALIZE_WHITESPACE
+    Traceback (most recent call last):
+      ...
+    TraitsCLIAttributeError: Node type of `1 + 2` does not match with
+    <class '_ast.Subscript'>
+
+    """
+    nodes = list(ast.iter_child_nodes(ast.parse(code)))
+    num = len(nodes)
+    if num == 0:
+        return
+    if num > 1:
+        raise TraitsCLIAttributeError(
+            "{0} nodes (> 1) in code `{1}`. "
+            "Only one expression is allowed.".format(num, code))
+
+    node = nodes[0]
+    if not isinstance(node, ast.Expr):
+        raise TraitsCLIAttributeError(
+            "`{0}` is not an expression. "
+            "Only expression is allowed.".format(code))
+    if not isinstance(node.value, valuetype):
+        raise TraitsCLIAttributeError(
+            "Node type of `{0}` does not match with {1}"
+            .format(code, valuetype))
 
 
 def eval_for_parser(code):
