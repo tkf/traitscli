@@ -549,7 +549,7 @@ class TraitsCLIBase(HasTraits):
         metadata `cli_paramfile` is True.
 
         To support new parameter file, add a **class**-method called
-        ``load_{ext}`` where ``{ext}`` is the file extension of the
+        ``loader_{ext}`` where ``{ext}`` is the file extension of the
         parameter file.
 
         """
@@ -564,7 +564,7 @@ class TraitsCLIBase(HasTraits):
 
     def _load_paramfile(self, path):
         ext = os.path.splitext(path)[-1][1:].lower()
-        param = getattr(self, 'load_{0}'.format(ext))(path)
+        param = getattr(self, 'loader_{0}'.format(ext))(path)
         try:
             self.setattrs(param, only_configurable=True)
         except TraitsCLIAttributeError as e:
@@ -572,7 +572,7 @@ class TraitsCLIBase(HasTraits):
                 "Error while loading file {0}: {1}"
                 .format(path, e.message))
 
-    def __footnote_load_func(func):
+    def __footnote_loader_func(func):
         func.__doc__ += """
 
         *User* of this class should **NOT** call this function.
@@ -585,24 +585,24 @@ class TraitsCLIBase(HasTraits):
         return func
 
     @classmethod
-    @__footnote_load_func
-    def load_json(cls, path, _open=open):
+    @__footnote_loader_func
+    def loader_json(cls, path, _open=open):
         """Load parameter from JSON file."""
         import json
         with _open(path) as file:
             return json.load(file)
 
     @classmethod
-    @__footnote_load_func
-    def load_yaml(cls, path, _open=open):
+    @__footnote_loader_func
+    def loader_yaml(cls, path, _open=open):
         """Load parameter from YAML file."""
         import yaml
         with _open(path) as file:
             return yaml.load(file)
 
     @classmethod
-    @__footnote_load_func
-    def load_conf(cls, path, _open=open):
+    @__footnote_loader_func
+    def loader_conf(cls, path, _open=open):
         """Load parameter from conf/ini file."""
         import ConfigParser
         config = ConfigParser.ConfigParser()
@@ -619,11 +619,11 @@ class TraitsCLIBase(HasTraits):
                     dct[join(sect, k)] = v
             return dct
 
-    load_ini = load_conf
+    loader_ini = loader_conf
 
     @classmethod
-    @__footnote_load_func
-    def load_py(cls, path, _open=open):
+    @__footnote_loader_func
+    def loader_py(cls, path, _open=open):
         """Load parameter from Python file."""
         param = {}
         with _open(path) as file:

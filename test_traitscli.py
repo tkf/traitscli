@@ -313,9 +313,9 @@ class ParamFileTestingMixIn(object):
             self.assertEqual(x, paths.pop())
             return params.pop()
 
-        self.cliclass.load_dummy = staticmethod(dummy_loader)
+        self.cliclass.loader_dummy = staticmethod(dummy_loader)
         yield
-        del self.cliclass.load_dummy
+        del self.cliclass.loader_dummy
         self.assertEqual(paths, [])
 
 
@@ -449,7 +449,7 @@ class TestParamFileLoader(object):
         source = data['source']
         result = data['result']
         cliclass = data.get('cliclass', TestingCLIBase)
-        loader = getattr(cliclass, 'load_{0}'.format(ext))
+        loader = getattr(cliclass, 'loader_{0}'.format(ext))
         called_with = []
 
         def _open(arg):
