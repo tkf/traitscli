@@ -660,6 +660,24 @@ class TraitsCLIBase(HasTraits):
         names = self.config_names(**metadata)
         return dict((n, getattr(self, n)) for n in names)
 
+    @classmethod
+    def config_traits(cls, **metadata):
+        """
+        Get config traits of this class and return as a dict.
+
+        The returned dict can be nested if this class has `Instance`
+        trait of class `TraitsCLIBase`.
+
+        """
+        traits = {}
+        for (k, v) in cls.class_traits(config=True).iteritems():
+            if (isinstance(v.trait_type, Instance) and
+                issubclass(v.trait_type.klass, TraitsCLIBase)):
+                traits[k] = v.trait_type.klass.config_traits()
+            else:
+                traits[k] = v
+        return traits
+
     def do_run(self):
         """
         Actual implementation of `self.run`.
