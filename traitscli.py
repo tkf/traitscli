@@ -122,7 +122,7 @@ import ast
 from traits.api import (
     HasTraits, Bool, CBool, Complex, CComplex, Float, CFloat,
     Int, CInt, Long, CLong, Str, CStr, Unicode, CUnicode,
-    Enum, Instance,
+    Dict, List, Enum, Instance,
 )
 
 __version__ = '0.1.beta0'
@@ -706,6 +706,7 @@ class TraitsCLIBase(HasTraits):
 
     def __eval_dict_like_options(self, dopts):
         ns = self.config()
+        traits = flattendict(self.config_traits())
         unknown = set(names_in_dict_like_options(dopts)) - set(ns)
         if unknown:
             unknown = tuple(unknown)
@@ -714,9 +715,21 @@ class TraitsCLIBase(HasTraits):
                 if k.startswith(unknown))
             raise InvalidDictLikeOptionError(
                 "Unknown dict-like options {0}".format(clargs))
+
+        def value_trait(trait_type):
+            if isinstance(trait_type, Dict):
+                return trait_type.value_trait.trait_type
+            elif isinstance(trait_type, List):
+                return trait_type.item_trait.trait_type
+
         for (lhs, rhs) in dopts:
+            name = lhs.split('[', 1)[0]
+            trait_type = value_trait(traits[name].trait_type)
             assert_expr(lhs, ast.Subscript)
-            assert_expr(rhs)
+            if isinstance(trait_type, (Str, CStr, Unicode, CUnicode)):
+                rhs = repr(rhs)
+            else:
+                assert_expr(rhs)
             try:
                 exec '{0} = {1}'.format(lhs, rhs) in ns
             except NameError as e:

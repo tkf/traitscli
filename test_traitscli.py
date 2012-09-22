@@ -155,12 +155,14 @@ class TestDictLikeOptions(TestCaseBase):
             dict(
                 dict=dict(a=1, b=2),
                 list=[0, 100, 2],
-                dictanystr={},
-                liststr=['a', 'b', 'c'],
+                dictanystr=dict(a='unquoted string'),
+                liststr=['a', 'unquoted string', 'c'],
             ),
             ["--dict['a']=1",
              "--dict['b']=2",
              "--list[1]=100",
+             "--dictanystr['a']=unquoted string",
+             "--liststr[1]=unquoted string",
             ])
 
     def test_invalid_args(self):
