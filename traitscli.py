@@ -124,6 +124,11 @@ from traits.api import (
     Enum, Instance,
 )
 
+__version__ = '0.1'
+__author__ = 'Takafumi Arakaki'
+__license__ = 'BSD License'
+
+
 _trait_simple_type_map = {
     Complex: complex,
     CComplex: complex,
