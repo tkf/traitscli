@@ -139,11 +139,15 @@ class TestDictLikeOptions(TestCaseBase):
     class cliclass(TestingCLIBase):
         dict = Dict(config=True)
         list = List(range(3), config=True)
+        dictanystr = Dict(value_trait=Str, config=True)
+        liststr = List(Str, ['a', 'b', 'c'], config=True)
 
     def test_empty_args(self):
         self.assert_attributes(dict(
             dict={},
             list=range(3),
+            dictanystr={},
+            liststr=['a', 'b', 'c'],
         ))
 
     def test_full_args(self):
@@ -151,6 +155,8 @@ class TestDictLikeOptions(TestCaseBase):
             dict(
                 dict=dict(a=1, b=2),
                 list=[0, 100, 2],
+                dictanystr={},
+                liststr=['a', 'b', 'c'],
             ),
             ["--dict['a']=1",
              "--dict['b']=2",
