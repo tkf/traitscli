@@ -608,14 +608,18 @@ class TraitsCLIBase(HasTraits):
                 self._load_paramfile(v)
 
     def _load_paramfile(self, path):
-        ext = os.path.splitext(path)[-1][1:].lower()
-        param = getattr(self, 'loader_{0}'.format(ext))(path)
+        param = self.dispatch_paramfile_loader(path)(path)
         try:
             self.setattrs(param, only_configurable=True)
         except TraitsCLIAttributeError as e:
             raise TraitsCLIAttributeError(
                 "Error while loading file {0}: {1}"
                 .format(path, e.message))
+
+    @classmethod
+    def dispatch_paramfile_loader(cls, path):
+        ext = os.path.splitext(path)[-1][1:].lower()
+        return getattr(cls, 'loader_{0}'.format(ext))
 
     def __footnote_loader_func(func):
         func.__doc__ += """
