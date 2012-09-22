@@ -309,22 +309,22 @@ def setdottedattr(object, dottedname, value):
     setattr(getdottedattr(object, names[:-1]), names[-1], value)
 
 
-def load_json(path):
+def load_json(path, _open=open):
     import json
-    with open(path) as file:
+    with _open(path) as file:
         return json.load(file)
 
 
-def load_yaml(path):
+def load_yaml(path, _open=open):
     import yaml
-    with open(path) as file:
+    with _open(path) as file:
         return yaml.load(file)
 
 
-def load_conf(path):
+def load_conf(path, _open=open):
     import ConfigParser
     config = ConfigParser.ConfigParser()
-    with open(path) as file:
+    with _open(path) as file:
         config.readfp(file)
     sections = config.sections()
     if len(sections) == 1:
@@ -338,9 +338,10 @@ def load_conf(path):
         return dct
 
 
-def load_py(path):
+def load_py(path, _open=open):
     param = {}
-    execfile(path, param)
+    with _open(path) as file:
+        exec file.read() in param
     return cleanup_dict(param)
 
 

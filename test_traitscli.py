@@ -372,3 +372,95 @@ class TestNestedParamFileCLI(TestCaseBase, ParamFileTestingMixIn):
         with self.dummy_loader(['param.dummy'],
                                [dict(ncsub=dict(int=1))]):
             self.assert_invalid_args(['--paramfile', 'param.dummy'])
+
+
+class TestParamFileLoader(object):
+    # Do NOT use `unittest.TestCase` here, as then nose cannot detect
+    # generator-type test.
+
+    from textwrap import dedent
+
+    sample_data_flat = dict(a=1, b=2)
+    sample_data_homo_nested = dict(a=dict(b=1), c=dict(d=2))
+
+    samples = dict(
+        json=[
+            {'source': '{"a": 1, "b": 2}',
+             'result': sample_data_flat},
+            {'source': '{"a": {"b": 1}, "c": {"d": 2}}',
+             'result': sample_data_homo_nested},
+        ],
+        yaml=[
+            {'source': dedent(
+                """\
+                a: 1
+                b: 2
+                """),
+             'result': sample_data_flat},
+            {'source': dedent(
+                """\
+                a:
+                  b: 1
+                c:
+                  d: 2
+                """),
+             'result': sample_data_homo_nested},
+        ],
+        # TODO: Fix conf loader.
+        #       As ConfigParser does not convert types, these tests fail.
+        # conf=[
+        #     {'source': dedent(
+        #         """\
+        #         [section] ; this name does not mean anything
+        #         a = 1
+        #         b = 2
+        #         """),
+        #      'result': sample_data_flat},
+        #     {'source': dedent(
+        #         """\
+        #         [a]
+        #         b = 1
+        #         [c]
+        #         d = 2
+        #         """),
+        #      'result': sample_data_homo_nested},
+        # ],
+        py=[
+            {'source': dedent(
+                """\
+                a = 1
+                b = 2
+                """),
+             'result': sample_data_flat},
+            {'source': dedent(
+                """\
+                a = {'b': 1}
+                c = {'d': 2}
+                """),
+             'result': sample_data_homo_nested},
+        ],
+    )
+
+    paramfile_loader = TestingCLIBase.paramfile_loader
+
+    def check_paramfile_loader(self, ext, index):
+        from nose.tools import eq_
+        data = self.samples[ext][index]
+        source = data['source']
+        result = data['result']
+        loader = self.paramfile_loader[ext]
+        called_with = []
+
+        def _open(arg):
+            import io
+            called_with.append(arg)
+            return io.BytesIO(source)
+
+        arg = 'path'
+        eq_(loader(arg, _open=_open), result)
+        eq_(called_with, [arg])
+
+    def test_paramfile_loader(self):
+        for (ext, datalist) in self.samples.iteritems():
+            for index in range(len(datalist)):
+                yield (self.check_paramfile_loader, ext, index)
