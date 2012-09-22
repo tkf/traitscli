@@ -451,8 +451,8 @@ class TestParamFileLoader(object):
              'result': sample_data_flat},
             {'source': dedent(
                 """\
-                a = {'b': 1}
-                c = {'d': 2}
+                a = dict(b=1)
+                c = dict(d=2)
                 """),
              'result': sample_data_homo_nested},
         ],
