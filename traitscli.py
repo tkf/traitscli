@@ -714,15 +714,15 @@ class TraitsCLIBase(HasTraits):
                 if k.startswith(unknown))
             raise InvalidDictLikeOptionError(
                 "Unknown dict-like options {0}".format(clargs))
-        for (rhs, lhs) in dopts:
-            assert_expr(rhs, ast.Subscript)
-            assert_expr(lhs)
+        for (lhs, rhs) in dopts:
+            assert_expr(lhs, ast.Subscript)
+            assert_expr(rhs)
             try:
-                exec '{0} = {1}'.format(rhs, lhs) in ns
+                exec '{0} = {1}'.format(lhs, rhs) in ns
             except NameError as e:
                 raise TraitsCLIAttributeError(
                     'Got {0!r} wile evaluating --{1}={2}'.format(
-                        e, rhs, lhs))
+                        e, lhs, rhs))
 
     @classmethod
     def is_configurable(cls, dottedname):
