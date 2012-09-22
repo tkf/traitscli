@@ -269,7 +269,9 @@ def getdottedattr(object, dottedname):
     >>> a = Dotty()
     >>> a.b = Dotty()
     >>> a.b.c = 'value'
-    >>> getdottedattr(a, 'b.c')
+    >>> getdottedattr(a, 'b.c')  # dotty access
+    'value'
+    >>> getdottedattr(a.b, 'c')  # works like normal `getattr`
     'value'
 
     """
@@ -290,8 +292,11 @@ def setdottedattr(object, dottedname, value):
     ...     pass
     >>> a = Dotty()
     >>> a.b = Dotty()
-    >>> setdottedattr(a, 'b.c', 'value')
+    >>> setdottedattr(a, 'b.c', 'value')  # dotty access
     >>> a.b.c
+    'value'
+    >>> setdottedattr(a.b, 'd', 'value')  # works like normal `setattr`
+    >>> a.b.d
     'value'
 
     """
