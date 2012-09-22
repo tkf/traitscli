@@ -161,6 +161,7 @@ class TestDictLikeOptions(TestCaseBase):
         self.assert_invalid_args(['--invalid', 'x'])
         self.assert_invalid_args(['--invalid["k"]', 'x'])
         self.assert_invalid_args(['--dict[undefined_name]', '"x"'])
+        self.assert_invalid_args(['--dict["k"]', 'undefined_name'])
         self.assert_invalid_args(['--dict["k"]; print 1', '"x"'])
         self.assert_invalid_args(['--dict["k"] + 2', '"x"'])
 
