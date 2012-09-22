@@ -330,42 +330,6 @@ def setdottedattr(object, dottedname, value):
     setattr(getdottedattr(object, names[:-1]), names[-1], value)
 
 
-def load_json(path, _open=open):
-    import json
-    with _open(path) as file:
-        return json.load(file)
-
-
-def load_yaml(path, _open=open):
-    import yaml
-    with _open(path) as file:
-        return yaml.load(file)
-
-
-def load_conf(path, _open=open):
-    import ConfigParser
-    config = ConfigParser.ConfigParser()
-    with _open(path) as file:
-        config.readfp(file)
-    sections = config.sections()
-    if len(sections) == 1:
-        return dict(config.items(sections[0]))
-    else:
-        dct = {}
-        join = '{0}.{1}'.format
-        for sect in sections:
-            for (k, v) in config.items(sect):
-                dct[join(sect, k)] = v
-        return dct
-
-
-def load_py(path, _open=open):
-    param = {}
-    with _open(path) as file:
-        exec file.read() in param
-    return cleanup_dict(param)
-
-
 def cleanup_dict(dct,
                  allow=re.compile('^[a-zA-Z_][a-zA-Z0-9_]*$'),
                  deny=re.compile('^_.*_$')):
@@ -584,6 +548,10 @@ class TraitsCLIBase(HasTraits):
         Path of parameter file is defined by attributes whose
         metadata `cli_paramfile` is True.
 
+        To support new parameter file, add a **class**-method called
+        ``load_{ext}`` where ``{ext}`` is the file extension of the
+        parameter file.
+
         """
         for v in self.config(cli_paramfile=True).itervalues():
             if not v:
@@ -594,31 +562,73 @@ class TraitsCLIBase(HasTraits):
             else:
                 self._load_paramfile(v)
 
-    paramfile_loader = dict(
-        json=load_json,
-        yaml=load_yaml,
-        conf=load_conf,
-        ini=load_conf,
-        py=load_py,
-    )
-    """
-    File loader functions.
-
-    This is a map from file extensions to loader functions.
-    Loader function takes only one argument `path` and must
-    return a `dict`.
-
-    """
-
     def _load_paramfile(self, path):
         ext = os.path.splitext(path)[-1][1:].lower()
-        param = self.paramfile_loader[ext](path)
+        param = getattr(self, 'load_{0}'.format(ext))(path)
         try:
             self.setattrs(param, only_configurable=True)
         except TraitsCLIAttributeError as e:
             raise TraitsCLIAttributeError(
                 "Error while loading file {0}: {1}"
                 .format(path, e.message))
+
+    def __footnote_load_func(func):
+        func.__doc__ += """
+
+        *User* of this class should **NOT** call this function.
+        Use `load_paramfile` to load parameter file(s).
+
+        However, you can re-define this classmethod function to modify
+        how parameter file is loaded.
+
+        """
+        return func
+
+    @classmethod
+    @__footnote_load_func
+    def load_json(cls, path, _open=open):
+        """Load parameter from JSON file."""
+        import json
+        with _open(path) as file:
+            return json.load(file)
+
+    @classmethod
+    @__footnote_load_func
+    def load_yaml(cls, path, _open=open):
+        """Load parameter from YAML file."""
+        import yaml
+        with _open(path) as file:
+            return yaml.load(file)
+
+    @classmethod
+    @__footnote_load_func
+    def load_conf(cls, path, _open=open):
+        """Load parameter from conf/ini file."""
+        import ConfigParser
+        config = ConfigParser.ConfigParser()
+        with _open(path) as file:
+            config.readfp(file)
+        sections = config.sections()
+        if len(sections) == 1:
+            return dict(config.items(sections[0]))
+        else:
+            dct = {}
+            join = '{0}.{1}'.format
+            for sect in sections:
+                for (k, v) in config.items(sect):
+                    dct[join(sect, k)] = v
+            return dct
+
+    load_ini = load_conf
+
+    @classmethod
+    @__footnote_load_func
+    def load_py(cls, path, _open=open):
+        """Load parameter from Python file."""
+        param = {}
+        with _open(path) as file:
+            exec file.read() in param
+        return cleanup_dict(param)
 
     @classmethod
     def __classify_kwds(cls, kwds):

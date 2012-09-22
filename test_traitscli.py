@@ -306,14 +306,16 @@ class ParamFileTestingMixIn(object):
     @contextmanager
     def dummy_loader(self, paths, params):
         self.assertEqual(len(paths), len(params))
+        for p in paths:
+            self.assertTrue(p.endswith('.dummy'))
 
         def dummy_loader(x):
             self.assertEqual(x, paths.pop())
             return params.pop()
 
-        self.cliclass.paramfile_loader['dummy'] = dummy_loader
+        self.cliclass.load_dummy = staticmethod(dummy_loader)
         yield
-        del self.cliclass.paramfile_loader['dummy']
+        del self.cliclass.load_dummy
         self.assertEqual(paths, [])
 
 
@@ -441,14 +443,13 @@ class TestParamFileLoader(object):
         ],
     )
 
-    paramfile_loader = TestingCLIBase.paramfile_loader
-
     def check_paramfile_loader(self, ext, index):
         from nose.tools import eq_
         data = self.samples[ext][index]
         source = data['source']
         result = data['result']
-        loader = self.paramfile_loader[ext]
+        cliclass = data.get('cliclass', TestingCLIBase)
+        loader = getattr(cliclass, 'load_{0}'.format(ext))
         called_with = []
 
         def _open(arg):
