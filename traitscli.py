@@ -715,8 +715,8 @@ class TraitsCLIBase(HasTraits):
             raise InvalidDictLikeOptionError(
                 "Unknown dict-like options {0}".format(clargs))
         for (rhs, lhs) in dopts:
-            # TODO: Check that rhs/lhs really an expression, rather
-            #       than code containing ";" or "\n".
+            assert_expr(rhs, ast.Subscript)
+            assert_expr(lhs)
             try:
                 exec '{0} = {1}'.format(rhs, lhs) in ns
             except NameError as e:
