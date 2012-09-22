@@ -8,7 +8,7 @@ from traits.api import (
     Event,
 )
 
-from traitscli import TraitsCLIBase, multi_command_cli
+from traitscli import TraitsCLIBase, multi_command_cli, flattendict
 from sample import SampleCLI
 
 
@@ -385,6 +385,21 @@ class TestParamFileLoader(object):
     sample_data_flat = dict(a=1, b=2)
     sample_data_homo_nested = dict(a=dict(b=1), c=dict(d=2))
 
+    class sample_class_flat(TestingCLIBase):
+        a = Int(config=True)
+        b = Int(config=True)
+
+    class sample_class_homo_nested(TestingCLIBase):
+
+        class a_class(TestingCLIBase):
+            b = Int(config=True)
+
+        class c_class(TestingCLIBase):
+            d = Int(config=True)
+
+        a = Instance(a_class, config=True)
+        c = Instance(c_class, config=True)
+
     samples = dict(
         json=[
             {'source': '{"a": 1, "b": 2}',
@@ -408,25 +423,25 @@ class TestParamFileLoader(object):
                 """),
              'result': sample_data_homo_nested},
         ],
-        # TODO: Fix conf loader.
-        #       As ConfigParser does not convert types, these tests fail.
-        # conf=[
-        #     {'source': dedent(
-        #         """\
-        #         [section] ; this name does not mean anything
-        #         a = 1
-        #         b = 2
-        #         """),
-        #      'result': sample_data_flat},
-        #     {'source': dedent(
-        #         """\
-        #         [a]
-        #         b = 1
-        #         [c]
-        #         d = 2
-        #         """),
-        #      'result': sample_data_homo_nested},
-        # ],
+        conf=[
+            {'source': dedent(
+                """\
+                [section] ; this name does not mean anything
+                a = 1
+                b = 2
+                """),
+             'cliclass': sample_class_flat,
+             'result': sample_data_flat},
+            {'source': dedent(
+                """\
+                [a]
+                b = 1
+                [c]
+                d = 2
+                """),
+             'cliclass': sample_class_homo_nested,
+             'result': flattendict(sample_data_homo_nested)},
+        ],
         py=[
             {'source': dedent(
                 """\

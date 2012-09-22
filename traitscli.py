@@ -609,15 +609,35 @@ class TraitsCLIBase(HasTraits):
         with _open(path) as file:
             config.readfp(file)
         sections = config.sections()
+        traits = flattendict(cls.config_traits())
+        param = {}
+
+        def getoptions(section, prefix=''):
+            for option in config.options(section):
+                key = prefix + option
+                if key in traits:
+                    trait_type = traits[key].trait_type
+                    if isinstance(trait_type, (Bool, CBool)):
+                        param[key] = config.getboolean(section, option)
+                    else:
+                        val = config.get(section, option)
+                        stype = trait_simple_type(trait_type)
+                        if stype:
+                            param[key] = stype(val)
+                        else:
+                            param[key] = val
+                else:
+                    raise TraitsCLIAttributeError(
+                        "Key '{0}' is not configurable attribute of "
+                        "class {1}.".format(key, cls.__name__))
+
         if len(sections) == 1:
-            return dict(config.items(sections[0]))
+            getoptions(sections[0])
         else:
-            dct = {}
-            join = '{0}.{1}'.format
             for sect in sections:
-                for (k, v) in config.items(sect):
-                    dct[join(sect, k)] = v
-            return dct
+                getoptions(sect, sect + '.')
+
+        return param
 
     loader_ini = loader_conf
 
