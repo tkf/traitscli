@@ -18,6 +18,7 @@ setup(
         # see: http://pypi.python.org/pypi?%3Aaction=list_classifiers
     ],
     install_requires=[
+        'argparse',
         'traits',
     ]
 )
