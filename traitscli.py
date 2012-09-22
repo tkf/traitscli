@@ -256,6 +256,27 @@ def eval_for_parser(code):
             'Got {0!r} wile evaluating {1}'.format(e, code))
 
 
+def flattendict(dct):
+    """
+    Flatten dictionary using key concatenated by dot.
+
+    >>> flattendict({'a': 1, 'b': 2}) == {'a': 1, 'b': 2}
+    True
+    >>> flattendict({'a': 1, 'b': {'c': 2}}) == {'a': 1, 'b.c': 2}
+    True
+
+    """
+    flatten = {}
+    join = '{0}.{1}'.format
+    for (k, v) in dct.iteritems():
+        if isinstance(v, dict):
+            for (j, u) in flattendict(v).iteritems():
+                flatten[join(k, j)] = u
+        else:
+            flatten[k] = v
+    return flatten
+
+
 def splitdottedname(dottedname):
     return (dottedname if isinstance(dottedname, (tuple, list))
             else dottedname.split('.'))
