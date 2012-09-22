@@ -273,6 +273,40 @@ class TestNestedCLI(TestCaseBase):
         self.assert_invalid_args(['--sub.sub2', 'x'])
 
 
+class TestDictLikeNestedOptions(TestCaseBase):
+
+    class cliclass(TestingCLIBase):
+        class subcliclass(TestingCLIBase):
+            dict = Dict(config=True)
+            dictanystr = Dict(value_trait=Str, config=True)
+        sub = Instance(subcliclass, args=(), config=True)
+
+    def test_empty_args(self):
+        self.assert_attributes(dict(
+            sub=dict(dict={}, dictanystr={}),
+        ))
+
+    def test_full_args(self):
+        self.assert_attributes(
+            dict(
+                sub=dict(
+                    dict=dict(a=1),
+                    dictanystr=dict(a='string')),
+            ),
+            ["--sub.dict['a']=1",
+             "--sub.dictanystr['a']=string",
+            ])
+
+    def test_invalid_args(self):
+        self.assert_invalid_args(['--invalid', 'x'])
+        self.assert_invalid_args(['--invalid["k"]', 'x'])
+        self.assert_invalid_args(['--sub', 'x'])
+        self.assert_invalid_args(['--sub.dict[undefined_name]', '"x"'])
+        self.assert_invalid_args(['--sub.dict["k"]', 'undefined_name'])
+        self.assert_invalid_args(['--sub.dict["k"]; print 1', '"x"'])
+        self.assert_invalid_args(['--sub.dict["k"] + 2', '"x"'])
+
+
 class TestMetaDataCLI(TestCaseBase):
 
     class cliclass(TestingCLIBase):
