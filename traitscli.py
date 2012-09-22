@@ -707,7 +707,7 @@ class TraitsCLIBase(HasTraits):
     def __eval_dict_like_options(self, dopts):
         ns = self.config()
         traits = flattendict(self.config_traits())
-        unknown = set(names_in_dict_like_options(dopts)) - set(ns)
+        unknown = set(names_in_dict_like_options(dopts)) - set(traits)
         if unknown:
             unknown = tuple(unknown)
             clargs = ' '.join(
