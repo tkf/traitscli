@@ -780,6 +780,28 @@ class TraitsCLIBase(HasTraits):
         Path of parameter file is defined by attributes whose
         metadata `cli_paramfile` is True.
 
+        >>> from tempfile import NamedTemporaryFile
+        >>> from contextlib import nested
+        >>> class SampleCLI(TraitsCLIBase):
+        ...     int = Int(config=True)
+        ...     str = Str(config=True)
+        ...     paramfiles = List(cli_paramfile=True, config=True)
+        ...
+        >>> obj = SampleCLI()
+        >>> with nested(NamedTemporaryFile(suffix='.json'),
+        ...             NamedTemporaryFile(suffix='.json')) as (f, g):
+        ...     f.write('{"int": 1}')
+        ...     f.flush()
+        ...     g.write('{"str": "a"}')
+        ...     g.flush()
+        ...     obj.paramfiles = [f.name, g.name]
+        ...     obj.load_all_paramfiles()
+        ...
+        >>> obj.int
+        1
+        >>> obj.str
+        u'a'
+
         """
         for v in self.config(cli_paramfile=True).itervalues():
             if not v:
