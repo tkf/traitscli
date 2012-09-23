@@ -961,7 +961,6 @@ class TraitsCLIBase(HasTraits):
         return (kwds_paramfile, kwds_rest)
 
     def __eval_dict_like_options(self, dopts):
-        ns = self.config()
         traits = flattendict(self.config_traits())
         unknown = set(names_in_dict_like_options(dopts)) - set(traits)
         if unknown:
@@ -978,6 +977,7 @@ class TraitsCLIBase(HasTraits):
             elif isinstance(trait_type, List):
                 return trait_type.item_trait.trait_type
 
+        namespace = self.config()
         for (lhs, rhs) in dopts:
             name = lhs.split('[', 1)[0]
             trait_type = value_trait(traits[name].trait_type)
@@ -987,7 +987,7 @@ class TraitsCLIBase(HasTraits):
             else:
                 assert_expr(rhs)
             try:
-                exec '{0} = {1}'.format(lhs, rhs) in ns
+                exec '{0} = {1}'.format(lhs, rhs) in namespace
             except NameError as e:
                 raise TraitsCLIAttributeError(
                     'Got {0!r} wile evaluating --{1}={2}'.format(
