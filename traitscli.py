@@ -1097,7 +1097,8 @@ def multi_command_cli(name_class_pairs, args=None, ArgumentParser=None):
     class will be used.
 
     """
-    ArgumentParser = name_class_pairs[0][1].ArgumentParser
+    if ArgumentParser is None:
+        ArgumentParser = name_class_pairs[0][1].ArgumentParser
     parser = ArgumentParser(
         formatter_class=argparse.RawDescriptionHelpFormatter)
     subpersers = parser.add_subparsers()
