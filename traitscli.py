@@ -958,6 +958,50 @@ class TraitsCLIBase(HasTraits):
     def loader_conf(cls, path, _open=open):
         """
         Load parameter from conf/ini file.
+
+        As conf file has no type information, class traits will be
+        used at load time.
+
+        >>> class SubObject(TraitsCLIBase):
+        ...     c = Int(config=True)
+        >>> class SampleCLI(TraitsCLIBase):
+        ...     a = Int(config=True)
+        ...     b = Instance(SubObject, args=(), config=True)
+        ...     d = Instance(SubObject, args=(), config=True)
+
+        When there is only one section in conf file, section name will
+        be ignored.
+
+        >>> from tempfile import NamedTemporaryFile
+        >>> source = '''
+        ... [section name will be ignored]
+        ... a = 1
+        ... b.c = 2
+        ... '''
+        >>> with NamedTemporaryFile() as f:
+        ...     f.write(source)
+        ...     f.flush()
+        ...     param = SampleCLI.loader_conf(f.name)
+        >>> param == {'a': 1, 'b.c': 2}
+        True
+
+        When there is multiple sections in conf file, options are
+        prefixed by section name.
+
+        >>> from tempfile import NamedTemporaryFile
+        >>> source = '''
+        ... [b]
+        ... c = 1
+        ... [d]
+        ... c = 2
+        ... '''
+        >>> with NamedTemporaryFile() as f:
+        ...     f.write(source)
+        ...     f.flush()
+        ...     param = SampleCLI.loader_conf(f.name)
+        >>> param == {'b.c': 1, 'd.c': 2}
+        True
+
         """
         import ConfigParser
         config = ConfigParser.ConfigParser()
