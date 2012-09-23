@@ -830,17 +830,17 @@ class TraitsCLIBase(HasTraits):
         """
         return func
 
-    @classmethod
+    @staticmethod
     @__footnote_loader_func
-    def loader_json(cls, path, _open=open):
+    def loader_json(path, _open=open):
         """Load parameter from JSON file."""
         import json
         with _open(path) as file:
             return json.load(file)
 
-    @classmethod
+    @staticmethod
     @__footnote_loader_func
-    def loader_yaml(cls, path, _open=open):
+    def loader_yaml(path, _open=open):
         """Load parameter from YAML file."""
         import yaml
         with _open(path) as file:
@@ -887,9 +887,9 @@ class TraitsCLIBase(HasTraits):
 
     loader_ini = loader_conf
 
-    @classmethod
+    @staticmethod
     @__footnote_loader_func
-    def loader_py(cls, path, _open=open):
+    def loader_py(path, _open=open):
         """Load parameter from Python file."""
         param = {}
         with _open(path) as file:
