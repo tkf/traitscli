@@ -21,6 +21,7 @@ CLI base class
    .. automethod:: dispatch_paramfile_loader
    .. automethod:: loader_json
    .. automethod:: loader_yaml
+   .. automethod:: loader_yml
    .. automethod:: loader_conf
    .. automethod:: loader_ini
    .. autoattribute:: cli_conf_root_section

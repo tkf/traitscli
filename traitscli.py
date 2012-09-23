@@ -953,6 +953,9 @@ class TraitsCLIBase(HasTraits):
         with _open(path) as file:
             return yaml.load(file)
 
+    loader_yml = loader_yaml
+    """Alias to :meth:`loader_yaml`."""
+
     cli_conf_root_section = 'root'
     """
     Root section name for conf/ini file loader (:meth:`loader_conf`).
