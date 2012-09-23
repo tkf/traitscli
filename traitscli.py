@@ -785,6 +785,12 @@ class TraitsCLIBase(HasTraits):
 
         When `args` is given, it is used instead of ``sys.argv[1:]``.
 
+        Essentially, the following two should do the same thing::
+
+            $ python yourcli.py --alpha 1
+
+            >>> YourCLI.run(alpha=1)
+
         """
         parser = cls.get_argparser()
         return parse_and_run(parser, args)
