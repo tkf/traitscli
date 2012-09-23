@@ -27,7 +27,7 @@ class SampleCLI(TraitsCLIBase):
     not_configurable_from_cli = Bool()
 
     def do_run(self):
-        names = self.config_names()
+        names = self.class_trait_names(config=True)
         width = max(map(len, names))
         for na in names:
             print "{0:{1}} : {2!r}".format(na, width, getattr(self, na))

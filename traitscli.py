@@ -972,7 +972,7 @@ class TraitsCLIBase(HasTraits):
     def __classify_kwds(cls, kwds):
         kwds_paramfile = {}
         kwds_rest = kwds.copy()
-        for k in cls.config_names(cli_paramfile=True):
+        for k in cls.class_trait_names(cli_paramfile=True):
             if k in kwds_rest:
                 kwds_paramfile[k] = kwds_rest.pop(k)
         return (kwds_paramfile, kwds_rest)
@@ -1031,11 +1031,6 @@ class TraitsCLIBase(HasTraits):
     #      nested config in `config_names`, so that all `config_*`
     #      functions act in same manner.  Currently, only
     #      `config_Traits` treats nested config.
-
-    @classmethod
-    def config_names(cls, **metadata):
-        """Get trait attribute names of this class."""
-        return cls.class_trait_names(config=True, **metadata)
 
     @classmethod
     def config_traits(cls, **metadata):
