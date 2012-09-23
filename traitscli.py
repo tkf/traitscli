@@ -803,7 +803,7 @@ class TraitsCLIBase(HasTraits):
         u'a'
 
         """
-        for v in self.config(cli_paramfile=True).itervalues():
+        for v in self.trait_get(cli_paramfile=True).itervalues():
             if not v:
                 continue
             if isinstance(v, (list, tuple)):
@@ -977,7 +977,7 @@ class TraitsCLIBase(HasTraits):
             elif isinstance(trait_type, List):
                 return trait_type.item_trait.trait_type
 
-        namespace = self.config()
+        namespace = self.trait_get(config=True)
         for (lhs, rhs) in dopts:
             name = lhs.split('[', 1)[0]
             trait_type = value_trait(traits[name].trait_type)
@@ -1019,17 +1019,6 @@ class TraitsCLIBase(HasTraits):
     def config_names(cls, **metadata):
         """Get trait attribute names of this class."""
         return cls.class_trait_names(config=True, **metadata)
-
-    def config(self, **metadata):
-        """
-        Return a dict of configurable attributes of this instance.
-
-        See `self.traits` for the usage of `metadata`.
-        Note that ``config=True`` is already specified.
-
-        """
-        names = self.config_names(**metadata)
-        return dict((n, getattr(self, n)) for n in names)
 
     @classmethod
     def config_traits(cls, **metadata):
