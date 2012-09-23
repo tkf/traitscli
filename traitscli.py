@@ -240,7 +240,7 @@ def parse_and_run(parser, args=None):
         # Strip off unspecified arguments so that attributes set by
         # parameter file will not be override default values.
         # See `TraitsCLIBase.run` (actually, it's `func` here) for
-        # the timing of `TraitsCLIBase.load_paramfile`.
+        # the timing of `TraitsCLIBase.load_all_paramfiles`.
         return func(**dict((k, v) for (k, v) in kwds.iteritems()
                            if v is not _UNSPECIFIED))
 
@@ -766,14 +766,14 @@ class TraitsCLIBase(HasTraits):
         (kwds_paramfile, kwds_rest) = cls.__classify_kwds(kwds)
 
         self = cls(**kwds_paramfile)
-        self.load_paramfile()                  # from file
+        self.load_all_paramfiles()             # from file
         self.setattrs(kwds_rest)               # normal command line options
         self.__eval_dict_like_options(dopts)   # dict-like options
 
         self.do_run()
         return self
 
-    def load_paramfile(self):
+    def load_all_paramfiles(self):
         """
         Load attributes from parameter file.
 
@@ -791,11 +791,11 @@ class TraitsCLIBase(HasTraits):
                 continue
             if isinstance(v, (list, tuple)):
                 for path in v:
-                    self._load_paramfile(path)
+                    self.load_paramfile(path)
             else:
-                self._load_paramfile(v)
+                self.load_paramfile(v)
 
-    def _load_paramfile(self, path):
+    def load_paramfile(self, path):
         param = self.dispatch_paramfile_loader(path)(path)
         try:
             self.setattrs(param, only_configurable=True)
