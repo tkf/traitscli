@@ -782,7 +782,8 @@ class TraitsCLIBase(HasTraits):
 
         To support new parameter file, add a **class**-method called
         ``loader_{ext}`` where ``{ext}`` is the file extension of the
-        parameter file.
+        parameter file.  You can also redefine `dispatch_paramfile_loader`
+        **class**-method to change how loader function is chosen.
 
         """
         for v in self.config(cli_paramfile=True).itervalues():
@@ -805,6 +806,15 @@ class TraitsCLIBase(HasTraits):
 
     @classmethod
     def dispatch_paramfile_loader(cls, path):
+        """
+        Return an parameter file loader function  based on `path`.
+
+        This classmethod returns classmethod/staticmethod named
+        ``laoder_{ext}`` where ``{ext}`` is the file extension of
+        `path`.  You can redefine this classmethod to change the
+        dispatching behavior.
+
+        """
         ext = os.path.splitext(path)[-1][1:].lower()
         return getattr(cls, 'loader_{0}'.format(ext))
 
@@ -814,7 +824,7 @@ class TraitsCLIBase(HasTraits):
         *User* of this class should **NOT** call this function.
         Use `load_paramfile` to load parameter file(s).
 
-        However, you can re-define this classmethod function to modify
+        However, you can redefine this classmethod function to modify
         how parameter file is loaded.
 
         """

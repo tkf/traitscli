@@ -18,6 +18,7 @@ CLI base class
    .. automethod:: config_traits
    .. automethod:: setattrs
    .. automethod:: load_paramfile
+   .. automethod:: dispatch_paramfile_loader
 
    **Parser API**
 
