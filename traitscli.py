@@ -789,7 +789,7 @@ class TraitsCLIBase(HasTraits):
 
             $ python yourcli.py --alpha 1
 
-            >>> YourCLI.run(alpha=1)
+            >>> YourCLI.run(alpha=1)                        # doctest: +SKIP
 
         """
         parser = cls.get_argparser()
