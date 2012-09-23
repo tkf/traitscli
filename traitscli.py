@@ -904,6 +904,12 @@ class TraitsCLIBase(HasTraits):
             return trait_type.klass.is_configurable(tail)
         return False
 
+    # TBD: make `config_values` method to retrieve config values of
+    #      nested objects?  It is probably also a good idea to treat
+    #      nested config in `config_names`, so that all `config_*`
+    #      functions act in same manner.  Currently, only
+    #      `config_Traits` treats nested config.
+
     @classmethod
     def config_names(cls, **metadata):
         """Get trait attribute names of this class."""
