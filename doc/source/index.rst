@@ -29,5 +29,5 @@ CLI base class
 Utility functions
 -----------------
 
-.. autofunction:: flattendict
 .. autofunction:: multi_command_cli
+.. autofunction:: flattendict
