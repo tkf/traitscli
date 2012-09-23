@@ -1062,13 +1062,36 @@ def multi_command_cli(name_class_pairs, args=None, ArgumentParser=None):
     """
     Launch CLI to call multiple classes.
 
-    Usage::
+    Usage:
 
-      multi_command_cli([
-          ('init', DoInit),
-          ('checkout', DoCheckout),
-          ('branch', DoBranch),
-      ])
+    >>> class SampleBase(TraitsCLIBase):
+    ...     a = Int(config=True)
+    ...     def do_run(self):
+    ...         print "Running",
+    ...         print '{0}(a={1!r})'.format(self.__class__.__name__,
+    ...                                     self.a)
+    ...
+    >>> class SampleInit(SampleBase):
+    ...       pass
+    ...
+    >>> class SampleCheckout(SampleBase):
+    ...       pass
+    ...
+    >>> class SampleBranch(SampleBase):
+    ...       pass
+    ...
+    >>> obj = multi_command_cli(
+    ...     # CLI classes and subcommand names
+    ...     [('init', SampleInit),
+    ...      ('checkout', SampleCheckout),
+    ...      ('branch', SampleBranch),
+    ...     ],
+    ...     # Command line arguments
+    ...     ['init', '--a', '1'])
+    ...
+    Running SampleInit(a=1)
+    >>> isinstance(obj, SampleInit)   # used CLI object is returned.
+    True
 
     If `ArgumentParser` is not specified, `ArgumentParser` of the first
     class will be used.
