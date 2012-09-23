@@ -1058,7 +1058,7 @@ class TraitsCLIBase(HasTraits):
         """
 
 
-def multi_command_cli(name_class_pairs, args=None, ArgumentParser=None):
+def multi_command_cli(command_class_pairs, args=None, ArgumentParser=None):
     """
     Launch CLI to call multiple classes.
 
@@ -1098,10 +1098,10 @@ def multi_command_cli(name_class_pairs, args=None, ArgumentParser=None):
 
     """
     if ArgumentParser is None:
-        ArgumentParser = name_class_pairs[0][1].ArgumentParser
+        ArgumentParser = command_class_pairs[0][1].ArgumentParser
     parser = ArgumentParser(
         formatter_class=argparse.RawDescriptionHelpFormatter)
     subpersers = parser.add_subparsers()
-    for (name, cls) in name_class_pairs:
+    for (name, cls) in command_class_pairs:
         cls.add_parser(subpersers.add_parser(name))
     return parse_and_run(parser, args)
