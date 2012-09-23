@@ -663,7 +663,7 @@ class TraitsCLIBase(HasTraits):
         nested attribute will be set to its attribute.
 
         The values of `attrs` can be a dict.  If the corresponding
-        attribute is an instance of `TraitsCLIBase`, attributes
+        attribute is an instance of :class:`TraitsCLIBase`, attributes
         of this instance is set using this dictionary.  Otherwise,
         it will issue an error.
 
@@ -737,7 +737,7 @@ class TraitsCLIBase(HasTraits):
         """
         Call `parser.add_argument` based on class traits of `cls`.
 
-        This classmethod is called from `cls.get_argparser`.
+        This classmethod is called from :meth:`get_argparser`.
 
         """
         traits = cls.class_traits(config=True)
@@ -781,7 +781,7 @@ class TraitsCLIBase(HasTraits):
     @classmethod
     def cli(cls, args=None):
         """
-        Call `cls.run` using command line arguments.
+        Call :meth:`run` using command line arguments.
 
         When `args` is given, it is used instead of ``sys.argv[1:]``.
 
@@ -1053,10 +1053,10 @@ class TraitsCLIBase(HasTraits):
         Return configurable traits as a (possibly nested) dict.
 
         The returned dict can be nested if this class has `Instance`
-        trait of class `TraitsCLIBase`.  Use `flattendict` to get
-        a flat dictionary with dotted keys.
+        trait of :class:`TraitsCLIBase`.  Use :func:`flattendict` to
+        get a flat dictionary with dotted keys.
 
-        It is equivalent to ``cls.class_traits(config=True)`` if
+        It is equivalent to `:meth:`class_traits(config=True)`` if
         ``cls`` has no `Instance` trait.
 
         >>> class SubObject(TraitsCLIBase):
@@ -1088,7 +1088,7 @@ class TraitsCLIBase(HasTraits):
 
     def do_run(self):
         """
-        Actual implementation of `self.run`.
+        Actual implementation of :meth:`run`.
 
         Child class must implement this method.
 
