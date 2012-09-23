@@ -799,11 +799,11 @@ class TraitsCLIBase(HasTraits):
         parameter file.  You can also redefine `dispatch_paramfile_loader`
         **class**-method to change how loader function is chosen.
 
+        >>> from tempfile import NamedTemporaryFile
         >>> class SampleCLI(TraitsCLIBase):
         ...     int = Int(config=True)
         ...
         >>> obj = SampleCLI()
-        >>> from tempfile import NamedTemporaryFile
         >>> with NamedTemporaryFile(suffix='.json') as f:
         ...     f.write('{"int": 1}')
         ...     f.flush()
@@ -817,7 +817,6 @@ class TraitsCLIBase(HasTraits):
         non-configurable option.
 
         >>> obj = TraitsCLIBase()
-        >>> from tempfile import NamedTemporaryFile
         >>> with NamedTemporaryFile(suffix='.json') as f:
         ...     f.write('{"nonconfigurable": 1}')
         ...     f.flush()
