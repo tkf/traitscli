@@ -114,6 +114,12 @@ Example run::
 """
 # [[[end]]]
 
+__version__ = '0.1.beta0'
+__author__ = 'Takafumi Arakaki'
+__license__ = 'BSD License'
+__all__ = ['TraitsCLIBase', 'multi_command_cli', 'flattendict']
+
+
 import os
 import re
 import argparse
@@ -125,11 +131,6 @@ from traits.api import (
     Int, CInt, Long, CLong, Str, CStr, Unicode, CUnicode,
     Dict, List, Enum, Instance,
 )
-
-__version__ = '0.1.beta0'
-__author__ = 'Takafumi Arakaki'
-__license__ = 'BSD License'
-__all__ = ['TraitsCLIBase', 'multi_command_cli', 'flattendict']
 
 
 _trait_simple_type_map = {

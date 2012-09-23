@@ -1,17 +1,30 @@
 from distutils.core import setup
 
-import traitscli
+
+def parse_traitscli():
+    """Evaluate lines in traitscli.py just before imports."""
+    import itertools
+    with open('traitscli.py') as f:
+        lines = itertools.takewhile(lambda x: not x.startswith('__all__ ='),
+                                    iter(f.readline, ''))
+        src = ''.join(lines)
+    data = {}
+    exec src in data
+    return data
+
+
+data = parse_traitscli()
 
 setup(
     name='traitscli',
-    version=traitscli.__version__,
+    version=data['__version__'],
     py_modules=['traitscli'],
-    author=traitscli.__author__,
+    author=data['__author__'],
     author_email='aka.tkf@gmail.com',
     url='https://github.com/tkf/traitscli',
-    license=traitscli.__license__,
+    license=data['__license__'],
     description='traitscli - CLI generator based on class traits',
-    long_description=traitscli.__doc__,
+    long_description=data['__doc__'],
     keywords='CLI, traits',
     classifiers=[
         "Development Status :: 3 - Alpha",
