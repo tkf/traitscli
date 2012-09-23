@@ -442,7 +442,59 @@ class TraitsCLIBase(HasTraits):
        and then call `do_run` method.
 
 
-    Metadata for traits
+    **Examples**
+
+    To make class attribute configurable from command line options,
+    set metadata ``config=True``:
+
+    >>> class SampleCLI(TraitsCLIBase):
+    ...     int = Int(config=True)
+    ...
+    >>> obj = SampleCLI.cli(['--int', '1'])
+    >>> obj.int
+    1
+
+
+    For dict and list type attribute, you can modify it using
+    subscript access:
+
+    >>> class SampleCLI(TraitsCLIBase):
+    ...     dict = Dict(config=True)
+    ...
+    >>> obj = SampleCLI.cli(['--dict["k"]', '1'])
+    >>> obj.dict['k']
+    1
+
+
+    You don't need to quote string if dict/list attribute set
+    its value trait to str-like traits:
+
+    >>> class SampleCLI(TraitsCLIBase):
+    ...     dict = Dict(value_trait=Str, config=True)
+    ...
+    >>> obj = SampleCLI.cli(['--dict["k"]', 'unquoted string'])
+    >>> obj.dict['k']
+    'unquoted string'
+    >>> obj = SampleCLI.cli(['--dict["k"]=unquoted string'])
+    >>> obj.dict['k']
+    'unquoted string'
+
+
+    Attributes of nested class can be set using dot access:
+
+    >>> class SubObject(TraitsCLIBase):
+    ...     int = Int(config=True)
+    ...
+    >>> class SampleCLI(TraitsCLIBase):
+    ...     # Here, ``args=()`` is required to initialize `sub`.
+    ...     sub = Instance(SubObject, args=(), config=True)
+    ...
+    >>> obj = SampleCLI.cli(['--sub.int', '1'])
+    >>> obj.sub.int
+    1
+
+
+    **Metadata for traits**
 
     config : bool
        If metadata is True, this attribute is configurable via CLI.
