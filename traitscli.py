@@ -790,7 +790,7 @@ class TraitsCLIBase(HasTraits):
             else:
                 self.load_paramfile(v)
 
-    def load_paramfile(self, path):
+    def load_paramfile(self, path, only_configurable=True):
         """
         Load attributes from parameter file at `path`.
 
@@ -812,10 +812,24 @@ class TraitsCLIBase(HasTraits):
         >>> obj.int
         1
 
+
+        You can use ``only_configurable=False`` to set
+        non-configurable option.
+
+        >>> obj = TraitsCLIBase()
+        >>> from tempfile import NamedTemporaryFile
+        >>> with NamedTemporaryFile(suffix='.json') as f:
+        ...     f.write('{"nonconfigurable": 1}')
+        ...     f.flush()
+        ...     obj.load_paramfile(f.name, only_configurable=False)
+        ...
+        >>> obj.nonconfigurable
+        1
+
         """
         param = self.dispatch_paramfile_loader(path)(path)
         try:
-            self.setattrs(param, only_configurable=True)
+            self.setattrs(param, only_configurable=only_configurable)
         except TraitsCLIAttributeError as e:
             raise TraitsCLIAttributeError(
                 "Error while loading file {0}: {1}"
