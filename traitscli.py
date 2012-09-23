@@ -624,6 +624,12 @@ class TraitsCLIBase(HasTraits):
     >>> obj.trait_get(config=True) == {'a': 0, 'b': 1}
     True
 
+    Get a list of configurable attribute names.
+
+    >>> names = SampleCLI.class_trait_names(config=True)
+    >>> sorted(names)
+    ['a', 'b']
+
 
     """
 
