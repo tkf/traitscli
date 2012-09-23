@@ -630,6 +630,15 @@ class TraitsCLIBase(HasTraits):
     >>> sorted(names)
     ['a', 'b']
 
+    See `Traits user manual`_ for more information.
+    Especially, `Defining Traits: Initialization and Validation`_
+    is useful to quickly glance traits API.
+
+    .. _Traits user manual:
+      http://docs.enthought.com/traits/traits_user_manual/index.html
+
+    .. _`Defining Traits: Initialization and Validation`:
+      http://docs.enthought.com/traits/traits_user_manual/defining.html
 
     """
 
