@@ -14,7 +14,6 @@ CLI base class
 
    **API to access attributes**
 
-   .. automethod:: config_names
    .. automethod:: config_traits
    .. automethod:: setattrs
    .. automethod:: load_paramfile
