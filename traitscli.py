@@ -118,6 +118,7 @@ import os
 import re
 import argparse
 import ast
+from contextlib import contextmanager
 
 from traits.api import (
     HasTraits, Bool, CBool, Complex, CComplex, Float, CFloat,
@@ -424,6 +425,18 @@ def cleanup_dict(dct,
         if isinstance(k, basestring) and isallowed(k) and not isdenied(k)])
 
 
+@contextmanager
+def hidestderr():
+    try:
+        import sys
+        orig = sys.stderr
+        sys.stderr = open(os.devnull, 'w')
+        yield
+        sys.stderr.close()
+    finally:
+        sys.stderr = orig
+
+
 class TraitsCLIBase(HasTraits):
 
     """
@@ -499,19 +512,78 @@ class TraitsCLIBase(HasTraits):
     config : bool
        If metadata is True, this attribute is configurable via CLI.
 
+       >>> class SampleCLI(TraitsCLIBase):
+       ...     configurable = Int(config=True)
+       ...     hidden = Int()
+       ...
+       >>> with hidestderr():
+       ...     SampleCLI.cli(['--configurable', '1', '--hidden', '2'])
+       ... # `hidden` is not configurable, so it fails:
+       Traceback (most recent call last):
+         ...
+       SystemExit: 2
+       >>> obj = SampleCLI.cli(['--configurable', '1'])
+       >>> obj.configurable
+       1
+       >>> obj.hidden = 2
+       >>> obj.hidden
+       2
+
     desc : string
        Description of this attribute.  Passed to `help` argument
        of `ArgumentParser.add_argument`.
+
+       >>> class SampleCLI(TraitsCLIBase):
+       ...     a = Int(desc='help string for attribute a', config=True)
+       ...     b = Float(desc='help string for attribute b', config=True)
+       ...
+       >>> SampleCLI.get_argparser().print_help()  # doctest: +ELLIPSIS
+       usage: ... [-h] [--a A] [--b B]
+       <BLANKLINE>
+       optional arguments:
+         -h, --help  show this help message and exit
+         --a A       help string for attribute a (default: 0)
+         --b B       help string for attribute b (default: 0.0)
 
     cli_positional : bool (default: False)
        If True, corresponding command line argument is interpreted
        as a positional argument.
 
+       >>> class SampleCLI(TraitsCLIBase):
+       ...     int = Int(cli_positional=True, config=True)
+       ...
+       >>> obj = SampleCLI.cli(['1'])  # no `--a` here!
+       >>> obj.int
+       1
+
     cli_required : bool
        Passed to `required` argument of `ArgumentParser.add_argument`
 
+       >>> class SampleCLI(TraitsCLIBase):
+       ...     int = Int(cli_required=True, config=True)
+       ...
+       >>> with hidestderr():
+       ...     SampleCLI.cli([])
+       ...
+       Traceback (most recent call last):
+         ...
+       SystemExit: 2
+       >>> obj = SampleCLI.cli(['--int', '1'])
+       >>> obj.int
+       1
+
     cli_metavar : str
        Passed to `metavar` argument of `ArgumentParser.add_argument`
+
+       >>> class SampleCLI(TraitsCLIBase):
+       ...     int = Int(cli_metavar='NUM', config=True)
+       ...
+       >>> SampleCLI.get_argparser().print_help()  # doctest: +ELLIPSIS
+       usage: ... [-h] [--int NUM]
+       <BLANKLINE>
+       optional arguments:
+         -h, --help  show this help message and exit
+         --int NUM   (default: 0)
 
     cli_paramfile : bool
        This attribute has special meaning.  When this metadata is
@@ -519,6 +591,21 @@ class TraitsCLIBase(HasTraits):
        instance is first initialized using parameters defined in the
        parameter file, then command line arguments are used to
        override the parameters.
+
+       >>> class SampleCLI(TraitsCLIBase):
+       ...     int = Int(config=True)
+       ...     paramfile = Str(cli_paramfile=True, config=True)
+       ...
+       >>> import json
+       >>> from tempfile import NamedTemporaryFile
+       >>> param = {'int': 1}
+       >>> with NamedTemporaryFile(suffix='.json') as f:
+       ...     json.dump(param, f)
+       ...     f.flush()
+       ...     obj = SampleCLI.cli(['--paramfile', f.name])
+       ...
+       >>> obj.int
+       1
 
     """
 
