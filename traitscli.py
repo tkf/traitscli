@@ -608,6 +608,23 @@ class TraitsCLIBase(HasTraits):
        >>> obj.int
        1
 
+
+    **Idioms**
+
+    Get a dictionary containing configurable attributes.
+
+    >>> class SampleCLI(TraitsCLIBase):
+    ...     a = Int(0, config=True)
+    ...     b = Int(1, config=True)
+    ...     c = Int(2)
+    ...
+    >>> obj = SampleCLI()
+    >>> obj.trait_get() == {'a': 0, 'b': 1, 'c': 2}
+    True
+    >>> obj.trait_get(config=True) == {'a': 0, 'b': 1}
+    True
+
+
     """
 
     ArgumentParser = argparse.ArgumentParser
