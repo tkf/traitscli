@@ -19,6 +19,11 @@ CLI base class
    .. automethod:: load_paramfile
    .. automethod:: load_all_paramfiles
    .. automethod:: dispatch_paramfile_loader
+   .. automethod:: loader_json
+   .. automethod:: loader_yaml
+   .. automethod:: loader_conf
+   .. automethod:: loader_ini
+   .. automethod:: loader_py
 
    **Parser API**
 

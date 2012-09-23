@@ -914,11 +914,12 @@ class TraitsCLIBase(HasTraits):
     def __footnote_loader_func(func):
         func.__doc__ += """
 
-        *User* of this class should **NOT** call this function.
-        Use `load_paramfile` to load parameter file(s).
+        ..
+           *User* of this class should **NOT** call this function.
+           Use `load_paramfile` to load parameter file(s).
 
-        However, you can redefine this classmethod/staticmethod to
-        modify how parameter file is loaded.
+           However, you can redefine this classmethod/staticmethod to
+           modify how parameter file is loaded.
 
         """
         return func
@@ -979,6 +980,7 @@ class TraitsCLIBase(HasTraits):
         return param
 
     loader_ini = loader_conf
+    """Alias to :meth:`loader_conf`."""
 
     @staticmethod
     @__footnote_loader_func
