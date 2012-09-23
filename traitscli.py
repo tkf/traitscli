@@ -818,6 +818,9 @@ class TraitsCLIBase(HasTraits):
         `path`.  You can redefine this classmethod to change the
         dispatching behavior.
 
+        Call signature of the loader function must be ``loader(path)``
+        where ``path`` is a string file path to the parameter file.
+
         """
         ext = os.path.splitext(path)[-1][1:].lower()
         return getattr(cls, 'loader_{0}'.format(ext))
