@@ -681,10 +681,6 @@ class TraitsCLIBase(HasTraits):
                 setdottedattr(self, name, value)
 
     @classmethod
-    def connect_subparser(cls, subpersers, name):
-        return cls.add_parser(subpersers.add_parser(name))
-
-    @classmethod
     def get_argparser(cls):
         parser = cls.ArgumentParser(
             formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -1008,5 +1004,5 @@ def multi_command_cli(name_class_pairs, args=None, ArgumentParser=None):
         formatter_class=argparse.RawDescriptionHelpFormatter)
     subpersers = parser.add_subparsers()
     for (name, cls) in name_class_pairs:
-        cls.connect_subparser(subpersers, name)
+        cls.add_parser(subpersers.add_parser(name))
     return parse_and_run(parser, args)
