@@ -1026,19 +1026,17 @@ class TraitsCLIBase(HasTraits):
             return trait_type.klass.is_configurable(tail)
         return False
 
-    # TBD: make `config_values` method to retrieve config values of
-    #      nested objects?  It is probably also a good idea to treat
-    #      nested config in `config_names`, so that all `config_*`
-    #      functions act in same manner.  Currently, only
-    #      `config_Traits` treats nested config.
-
     @classmethod
     def config_traits(cls, **metadata):
         """
-        Get config traits of this class and return as a dict.
+        Return configurable traits as a (possibly nested) dict.
 
         The returned dict can be nested if this class has `Instance`
-        trait of class `TraitsCLIBase`.
+        trait of class `TraitsCLIBase`.  Use `flattendict` to get
+        a flat dictionary with dotted keys.
+
+        It is equivalent to ``cls.class_traits(config=True)`` if
+        ``cls`` has no `Instance` trait.
 
         """
         traits = {}
