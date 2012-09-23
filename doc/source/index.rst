@@ -22,6 +22,8 @@ CLI base class
    **Parser API**
 
    .. autoattribute:: ArgumentParser
+   .. automethod:: get_argparser
+   .. automethod:: add_parser
 
 
 Utility functions

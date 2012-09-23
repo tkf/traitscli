@@ -481,7 +481,7 @@ class TraitsCLIBase(HasTraits):
 
 
     You don't need to quote string if dict/list attribute set
-    its value trait to str-like traits:
+    its value trait to str-like trait:
 
     >>> class SampleCLI(TraitsCLIBase):
     ...     dict = Dict(value_trait=Str, config=True)
@@ -682,6 +682,13 @@ class TraitsCLIBase(HasTraits):
 
     @classmethod
     def get_argparser(cls):
+        """
+        Return an instance of `ArgumentParser` for this class.
+
+        Parser options are set according to the configurable traits of
+        this class.
+
+        """
         parser = cls.ArgumentParser(
             formatter_class=argparse.RawDescriptionHelpFormatter,
             description=cls.__description())
@@ -697,6 +704,9 @@ class TraitsCLIBase(HasTraits):
     def add_parser(cls, parser, prefix=''):
         """
         Call `parser.add_argument` based on class traits of `cls`.
+
+        This classmethod is called from `cls.get_argparser`.
+
         """
         traits = cls.class_traits(config=True)
         for k in sorted(traits):
