@@ -445,15 +445,15 @@ class TraitsCLIBase(HasTraits):
 
     Usage.  You will need to define:
 
-    1. Parameters (traits).  When it has `config` metadata, it is
+    1. Parameters (traits).  When it has ``config=True`` metadata, it is
        configurable via command line argument.
-       See:
-       http://github.enthought.com/traits/traits_user_manual/defining.html
+       See: `Defining Traits: Initialization and Validation`_
+       section in `Traits user manual`_.
 
-    2. `do_run` method.  This method gets no argument (except `self`).
+    2. :meth:`do_run` method.  This method gets no argument (except `self`).
        Do whatever this class needs to do based on its attributes.
-       `cli` function sets attributes based on command line options
-       and then call `do_run` method.
+       :meth:`cli` function sets attributes based on command line options
+       and then call :meth:`do_run` method.
 
 
     **Examples**
@@ -511,7 +511,8 @@ class TraitsCLIBase(HasTraits):
     **Metadata for traits**
 
     config : bool
-       If metadata is True, this attribute is configurable via CLI.
+       If this metadata of an attribute is True, this attribute is
+       configurable via CLI.
 
        >>> class SampleCLI(TraitsCLIBase):
        ...     configurable = Int(config=True)
@@ -546,7 +547,7 @@ class TraitsCLIBase(HasTraits):
          --a A       help string for attribute a (default: 0)
          --b B       help string for attribute b (default: 0.0)
 
-    cli_positional : bool (default: False)
+    cli_positional : bool
        If True, corresponding command line argument is interpreted
        as a positional argument.
 
@@ -659,8 +660,8 @@ class TraitsCLIBase(HasTraits):
         """
         Set attribute given a dictionary `attrs`.
 
-        Keys of `attrs` can be dot-separated name.  In this case,
-        nested attribute will be set to its attribute.
+        Keys of `attrs` can be dot-separated name (e.g., ``a.b.c``).
+        In this case, nested attribute will be set to its attribute.
 
         The values of `attrs` can be a dict.  If the corresponding
         attribute is an instance of :class:`TraitsCLIBase`, attributes
@@ -686,7 +687,7 @@ class TraitsCLIBase(HasTraits):
 
 
         If `only_configurable` is `True`, attempt to set
-        non-configurable attributes raise an error.
+        non-configurable attributes raises an error.
 
         >>> class SampleCLI(TraitsCLIBase):
         ...     a = Int(config=True)
@@ -798,7 +799,7 @@ class TraitsCLIBase(HasTraits):
     @classmethod
     def run(cls, **kwds):
         """
-        Make an instance of this class with args `kwds` and call `do_run`.
+        Make an instance with args `kwds` and call :meth:`do_run`.
         """
         dopts = kwds.pop('__dict_like_options', [])
         (kwds_paramfile, kwds_rest) = cls.__classify_kwds(kwds)
@@ -1148,7 +1149,7 @@ class TraitsCLIBase(HasTraits):
         trait of :class:`TraitsCLIBase`.  Use :func:`flattendict` to
         get a flat dictionary with dotted keys.
 
-        It is equivalent to `:meth:`class_traits(config=True)`` if
+        It is equivalent to ``cls.class_traits(config=True)`` if
         ``cls`` has no `Instance` trait.
 
         >>> class SubObject(TraitsCLIBase):
