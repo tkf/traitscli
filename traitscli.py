@@ -632,7 +632,40 @@ class TraitsCLIBase(HasTraits):
 
         The values of `attrs` can be a dict.  If the corresponding
         attribute is an instance of `TraitsCLIBase`, attributes
-        of this instance is set using this dictionary.
+        of this instance is set using this dictionary.  Otherwise,
+        it will issue an error.
+
+        >>> obj = TraitsCLIBase()
+        >>> obj.b = TraitsCLIBase()
+        >>> obj.setattrs({'a': 1, 'b': {'c': 2}})
+        >>> obj.a
+        1
+        >>> obj.b.c
+        2
+        >>> obj.setattrs({'b.a': 111, 'b.c': 222})
+        >>> obj.b.a
+        111
+        >>> obj.b.c
+        222
+        >>> obj.setattrs({'x.a': 0})
+        Traceback (most recent call last):
+          ...
+        AttributeError: 'TraitsCLIBase' object has no attribute 'x'
+
+
+        If `only_configurable` is `True`, attempt to set
+        non-configurable attributes raise an error.
+
+        >>> class SampleCLI(TraitsCLIBase):
+        ...     a = Int(config=True)
+        ...     b = Int()
+        ...
+        >>> obj = SampleCLI()
+        >>> obj.setattrs({'a': 1}, only_configurable=True)  # This is OK.
+        >>> obj.setattrs({'b': 1}, only_configurable=True)  # This is not!
+        Traceback (most recent call last):
+          ...
+        TraitsCLIAttributeError: Non-configurable key is given: b
 
         """
         for name in sorted(attrs):  # set shallower attributes first
