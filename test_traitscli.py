@@ -471,7 +471,7 @@ class TestParamFileLoader(object):
         conf=[
             {'source': dedent(
                 """\
-                [section] ; this name does not mean anything
+                [root]
                 a = 1
                 b = 2
                 """),

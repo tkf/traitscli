@@ -953,6 +953,14 @@ class TraitsCLIBase(HasTraits):
         with _open(path) as file:
             return yaml.load(file)
 
+    cli_conf_root_section = 'root'
+    """
+    Root section name for conf/ini file loader (:meth:`loader_conf`).
+
+    Options in this section will not be prefixed by section name.
+
+    """
+
     @classmethod
     @__footnote_loader_func
     def loader_conf(cls, path, _open=open):
@@ -968,13 +976,15 @@ class TraitsCLIBase(HasTraits):
         ...     a = Int(config=True)
         ...     b = Instance(SubObject, args=(), config=True)
         ...     d = Instance(SubObject, args=(), config=True)
+        ...     cli_conf_root_section = 'root'  # this is default
 
-        When there is only one section in conf file, section name will
-        be ignored.
+        You can write options using dot-separated name.
+        Use the section specified by :attr:`cli_conf_root_section`
+        for top-level attributes.
 
         >>> from tempfile import NamedTemporaryFile
         >>> source = '''
-        ... [section name will be ignored]
+        ... [root]
         ... a = 1
         ... b.c = 2
         ... '''
@@ -985,21 +995,23 @@ class TraitsCLIBase(HasTraits):
         >>> param == {'a': 1, 'b.c': 2}
         True
 
-        When there is multiple sections in conf file, options are
-        prefixed by section name.
+        Options in sections other than :attr:`cli_conf_root_section`
+        are prefixed by section name.
 
         >>> from tempfile import NamedTemporaryFile
         >>> source = '''
+        ... [root]
+        ... a = 1
         ... [b]
-        ... c = 1
-        ... [d]
         ... c = 2
+        ... [d]
+        ... c = 3
         ... '''
         >>> with NamedTemporaryFile() as f:
         ...     f.write(source)
         ...     f.flush()
         ...     param = SampleCLI.loader_conf(f.name)
-        >>> param == {'b.c': 1, 'd.c': 2}
+        >>> param == {'a': 1, 'b.c': 2, 'd.c': 3}
         True
 
         """
@@ -1030,10 +1042,10 @@ class TraitsCLIBase(HasTraits):
                         "Key '{0}' is not configurable attribute of "
                         "class {1}.".format(key, cls.__name__))
 
-        if len(sections) == 1:
-            getoptions(sections[0])
-        else:
-            for sect in sections:
+        for sect in sections:
+            if cls.cli_conf_root_section == sect:
+                getoptions(sect)
+            else:
                 getoptions(sect, sect + '.')
 
         return param
