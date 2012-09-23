@@ -23,6 +23,7 @@ CLI base class
    .. automethod:: loader_yaml
    .. automethod:: loader_conf
    .. automethod:: loader_ini
+   .. autoattribute:: cli_conf_root_section
    .. automethod:: loader_py
 
    **Parser API**
