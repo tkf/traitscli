@@ -927,7 +927,12 @@ class TraitsCLIBase(HasTraits):
     @staticmethod
     @__footnote_loader_func
     def loader_json(path, _open=open):
-        """Load parameter from JSON file."""
+        """
+        Load JSON file located at `path`.
+
+        It is equivalent to ``json.load(open(path))``.
+
+        """
         import json
         with _open(path) as file:
             return json.load(file)
@@ -935,7 +940,15 @@ class TraitsCLIBase(HasTraits):
     @staticmethod
     @__footnote_loader_func
     def loader_yaml(path, _open=open):
-        """Load parameter from YAML file."""
+        """
+        Load YAML file located at `path`.
+
+        It is equivalent to ``yaml.load(open(path))``.
+        You need PyYAML_ module to use this loader.
+
+        .. _PyYAML: http://pypi.python.org/pypi/PyYAML
+
+        """
         import yaml
         with _open(path) as file:
             return yaml.load(file)
@@ -943,7 +956,9 @@ class TraitsCLIBase(HasTraits):
     @classmethod
     @__footnote_loader_func
     def loader_conf(cls, path, _open=open):
-        """Load parameter from conf/ini file."""
+        """
+        Load parameter from conf/ini file.
+        """
         import ConfigParser
         config = ConfigParser.ConfigParser()
         with _open(path) as file:
@@ -985,7 +1000,23 @@ class TraitsCLIBase(HasTraits):
     @staticmethod
     @__footnote_loader_func
     def loader_py(path, _open=open):
-        """Load parameter from Python file."""
+        """
+        Load parameter from Python file located at `path`.
+
+        >>> from tempfile import NamedTemporaryFile
+        >>> source = '''
+        ... a = 1
+        ... b = dict(c=2)
+        ... _underscored_value_ = 'will_not_be_loaded'
+        ... '''
+        >>> with NamedTemporaryFile() as f:
+        ...     f.write(source)
+        ...     f.flush()
+        ...     param = TraitsCLIBase.loader_py(f.name)
+        >>> param == {'a': 1, 'b': {'c': 2}}
+        True
+
+        """
         param = {}
         with _open(path) as file:
             exec file.read() in param
