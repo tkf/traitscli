@@ -824,8 +824,8 @@ class TraitsCLIBase(HasTraits):
         *User* of this class should **NOT** call this function.
         Use `load_paramfile` to load parameter file(s).
 
-        However, you can redefine this classmethod function to modify
-        how parameter file is loaded.
+        However, you can redefine this classmethod/staticmethod to
+        modify how parameter file is loaded.
 
         """
         return func
