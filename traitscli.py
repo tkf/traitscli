@@ -799,6 +799,19 @@ class TraitsCLIBase(HasTraits):
         parameter file.  You can also redefine `dispatch_paramfile_loader`
         **class**-method to change how loader function is chosen.
 
+        >>> class SampleCLI(TraitsCLIBase):
+        ...     int = Int(config=True)
+        ...
+        >>> obj = SampleCLI()
+        >>> from tempfile import NamedTemporaryFile
+        >>> with NamedTemporaryFile(suffix='.json') as f:
+        ...     f.write('{"int": 1}')
+        ...     f.flush()
+        ...     obj.load_paramfile(f.name)
+        ...
+        >>> obj.int
+        1
+
         """
         param = self.dispatch_paramfile_loader(path)(path)
         try:
