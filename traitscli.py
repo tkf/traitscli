@@ -610,6 +610,13 @@ class TraitsCLIBase(HasTraits):
     """
 
     ArgumentParser = argparse.ArgumentParser
+    """
+    Argument parser class/factory.
+
+    This attribute must be a callable object which returns
+    an instance of `argparse.ArgumentParser` or its subclass.
+
+    """
 
     def __init__(self, **kwds):
         super(TraitsCLIBase, self).__init__()
