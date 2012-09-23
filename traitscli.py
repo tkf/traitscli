@@ -775,15 +775,10 @@ class TraitsCLIBase(HasTraits):
 
     def load_all_paramfiles(self):
         """
-        Load attributes from parameter file.
+        Load attributes from all parameter files set in paramfile attributes.
 
         Path of parameter file is defined by attributes whose
         metadata `cli_paramfile` is True.
-
-        To support new parameter file, add a **class**-method called
-        ``loader_{ext}`` where ``{ext}`` is the file extension of the
-        parameter file.  You can also redefine `dispatch_paramfile_loader`
-        **class**-method to change how loader function is chosen.
 
         """
         for v in self.config(cli_paramfile=True).itervalues():
@@ -796,6 +791,15 @@ class TraitsCLIBase(HasTraits):
                 self.load_paramfile(v)
 
     def load_paramfile(self, path):
+        """
+        Load attributes from parameter file at `path`.
+
+        To support new parameter file, add a **class**-method called
+        ``loader_{ext}`` where ``{ext}`` is the file extension of the
+        parameter file.  You can also redefine `dispatch_paramfile_loader`
+        **class**-method to change how loader function is chosen.
+
+        """
         param = self.dispatch_paramfile_loader(path)(path)
         try:
             self.setattrs(param, only_configurable=True)
