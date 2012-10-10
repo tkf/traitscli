@@ -21,6 +21,23 @@ Some benefits:
 .. _traits: https://github.com/enthought/traits
 
 
+Links
+-----
+
+* `Documentaions (at Read the Docs) <http://traits-cli.readthedocs.org/>`_
+* `Source code repository (at GitHub) <https://github.com/tkf/traitscli>`_
+* `Issue tracker (at GitHub) <https://github.com/tkf/traitscli/issues>`_
+* `PyPI <http://pypi.python.org/pypi/traitscli>`_
+* `Travis CI <https://travis-ci.org/#!/tkf/traitscli>`_
+
+
+Installation
+------------
+::
+
+  pip install traitscli
+
+
 Dependencies
 ------------
 
