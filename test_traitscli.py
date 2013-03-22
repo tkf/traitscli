@@ -3,6 +3,7 @@ import unittest
 from contextlib import contextmanager
 
 from traits.api import (
+    HasTraits,
     Str, Int, Float, Bool, List, Dict,
     Instance, Callable, Type,
     Event,
@@ -25,9 +26,7 @@ class ArgumentParserNoExit(ArgumentParser):
         self.exit(2, message)
 
 
-class TestingCLIBase(TraitsCLIBase):
-
-    ArgumentParser = ArgumentParserNoExit
+class TestingTraitsBase(HasTraits):
 
     @property
     def attributes(self):
@@ -41,10 +40,14 @@ class TestingCLIBase(TraitsCLIBase):
 
     def __getitem__(self, key):
         attr = getattr(self, key)
-        if isinstance(attr, TraitsCLIBase):
+        if isinstance(attr, TestingTraitsBase):
             return attr.attributes
         else:
             return attr
+
+
+class TestingCLIBase(TestingTraitsBase, TraitsCLIBase):
+    ArgumentParser = ArgumentParserNoExit
 
 
 class TestCaseBase(unittest.TestCase):
@@ -239,8 +242,8 @@ class TestDottedName(unittest.TestCase):
 class TestNestedCLI(TestCaseBase):
 
     class cliclass(TestingCLIBase):
-        class subcliclass(TestingCLIBase):
-            class subcliclass2(TestingCLIBase):
+        class subcliclass(TestingTraitsBase):
+            class subcliclass2(TestingTraitsBase):
                 int = Int(config=True)
             int = Int(config=True)
             sub2 = Instance(subcliclass2, args=(), config=True)
@@ -276,7 +279,7 @@ class TestNestedCLI(TestCaseBase):
 class TestDictLikeNestedOptions(TestCaseBase):
 
     class cliclass(TestingCLIBase):
-        class subcliclass(TestingCLIBase):
+        class subcliclass(TestingTraitsBase):
             dict = Dict(config=True)
             dictanystr = Dict(value_trait=Str, config=True)
         sub = Instance(subcliclass, args=(), config=True)
@@ -403,8 +406,8 @@ class TestParamFileCLI(TestCaseBase, ParamFileTestingMixIn):
 class TestNestedParamFileCLI(TestCaseBase, ParamFileTestingMixIn):
 
     class cliclass(TestingCLIBase):
-        class subcliclass(TestingCLIBase):
-            class subcliclass2(TestingCLIBase):
+        class subcliclass(TestingTraitsBase):
+            class subcliclass2(TestingTraitsBase):
                 int = Int(config=True)
             int = Int(config=True)
             sub2 = Instance(subcliclass2, args=(), config=True)
@@ -436,10 +439,10 @@ class TestParamFileLoader(object):
 
     class sample_class_homo_nested(TestingCLIBase):
 
-        class a_class(TestingCLIBase):
+        class a_class(TestingTraitsBase):
             b = Int(config=True)
 
-        class c_class(TestingCLIBase):
+        class c_class(TestingTraitsBase):
             d = Int(config=True)
 
         a = Instance(a_class, config=True)
