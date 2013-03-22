@@ -455,6 +455,99 @@ def hidestderr():
         sys.stderr = orig
 
 
+def add_parser(cls, parser, prefix=''):
+    """
+    Call `parser.add_argument` based on class traits of `cls`.
+
+    This classmethod is called from :meth:`get_argparser`.
+
+    """
+    traits = cls.class_traits(config=True)
+    for k in sorted(traits):
+        v = traits[k]
+
+        if (isinstance(v.trait_type, Instance) and
+                issubclass(v.trait_type.klass, HasTraits)):
+            if issubclass(v.trait_type.klass, TraitsCLIBase):
+                adder = v.trait_type.klass.add_parser
+            else:
+                adder = lambda *args: add_parser(v.trait_type.klass, *args)
+            adder(parser, prefix + k + '.')
+            # set_defaults is called here and it's redundant...
+            # but as there is no harm, let it be like this for now.
+            continue
+
+        dest = name = '{0}{1}'.format(prefix, k)
+        argkwds = dict(
+            help='{0} (default: {1})'.format(v.desc or '', v.default),
+        )
+        if not v.cli_positional:
+            name = '--{0}'.format(dest)
+        for arg_key in ['required', 'metavar']:
+            attr_val = getattr(v, 'cli_{0}'.format(arg_key))
+            if attr_val is not None:
+                argkwds[arg_key] = attr_val
+        stype = trait_simple_type(v.trait_type)
+        if stype:
+            argkwds['type'] = stype
+        elif isinstance(v.trait_type, (Bool, CBool)) and \
+             not v.cli_positional:
+            argkwds.update(
+                action='store_const',
+                const=not v.trait_type.default_value,
+            )
+        elif isinstance(v.trait_type, Enum):
+            argkwds['choices'] = v.trait_type.values
+        else:
+            argkwds['type'] = eval_for_parser
+        parser.add_argument(name, default=_UNSPECIFIED, **argkwds)
+    if issubclass(cls, TraitsCLIBase):
+        parser.set_defaults(func=cls.run)
+    return parser
+
+
+def config_traits(cls, **metadata):
+    """
+    Return configurable traits as a (possibly nested) dict.
+
+    The returned dict can be nested if this class has `Instance`
+    trait of :class:`TraitsCLIBase`.  Use :func:`flattendict` to
+    get a flat dictionary with dotted keys.
+
+    It is equivalent to ``cls.class_traits(config=True)`` if
+    ``cls`` has no `Instance` trait.
+
+    >>> class SubObject(TraitsCLIBase):
+    ...     int = Int(config=True)
+    ...
+    >>> class SampleCLI(TraitsCLIBase):
+    ...     nonconfigurable = Int()
+    ...     int = Int(config=True)
+    ...     sub = Instance(SubObject, args=(), config=True)
+    ...
+    >>> traits = SampleCLI.config_traits()
+    >>> traits                                         # doctest: +SKIP
+    {'int': <traits.traits.CTrait at ...>,
+     'sub': {'int': <traits.traits.CTrait at ...>}}
+    >>> traits['int'].trait_type                   # doctest: +ELLIPSIS
+    <traits.trait_types.Int object at ...>
+    >>> traits['sub']['int'].trait_type            # doctest: +ELLIPSIS
+    <traits.trait_types.Int object at ...>
+
+    """
+    traits = {}
+    for (k, v) in cls.class_traits(config=True).iteritems():
+        if (isinstance(v.trait_type, Instance) and
+                issubclass(v.trait_type.klass, HasTraits)):
+            if issubclass(v.trait_type.klass, TraitsCLIBase):
+                traits[k] = v.trait_type.klass.config_traits()
+            else:
+                traits[k] = config_traits(v.trait_type.klass)
+        else:
+            traits[k] = v
+    return traits
+
+
 class TraitsCLIBase(HasTraits):
 
     """
@@ -750,51 +843,7 @@ class TraitsCLIBase(HasTraits):
         import textwrap
         return textwrap.dedent(cls.__doc__) if cls.__doc__ else None
 
-    @classmethod
-    def add_parser(cls, parser, prefix=''):
-        """
-        Call `parser.add_argument` based on class traits of `cls`.
-
-        This classmethod is called from :meth:`get_argparser`.
-
-        """
-        traits = cls.class_traits(config=True)
-        for k in sorted(traits):
-            v = traits[k]
-
-            if (isinstance(v.trait_type, Instance) and
-                issubclass(v.trait_type.klass, TraitsCLIBase)):
-                v.trait_type.klass.add_parser(parser, prefix + k + '.')
-                # set_defaults is called here and it's redundant...
-                # but as there is no harm, let it be like this for now.
-                continue
-
-            dest = name = '{0}{1}'.format(prefix, k)
-            argkwds = dict(
-                help='{0} (default: {1})'.format(v.desc or '', v.default),
-            )
-            if not v.cli_positional:
-                name = '--{0}'.format(dest)
-            for arg_key in ['required', 'metavar']:
-                attr_val = getattr(v, 'cli_{0}'.format(arg_key))
-                if attr_val is not None:
-                    argkwds[arg_key] = attr_val
-            stype = trait_simple_type(v.trait_type)
-            if stype:
-                argkwds['type'] = stype
-            elif isinstance(v.trait_type, (Bool, CBool)) and \
-                 not v.cli_positional:
-                argkwds.update(
-                    action='store_const',
-                    const=not v.trait_type.default_value,
-                )
-            elif isinstance(v.trait_type, Enum):
-                argkwds['choices'] = v.trait_type.values
-            else:
-                argkwds['type'] = eval_for_parser
-            parser.add_argument(name, default=_UNSPECIFIED, **argkwds)
-        parser.set_defaults(func=cls.run)
-        return parser
+    add_parser = classmethod(add_parser)
 
     @classmethod
     def cli(cls, args=None):
@@ -1157,44 +1206,7 @@ class TraitsCLIBase(HasTraits):
             return trait_type.klass.is_configurable(tail)
         return False
 
-    @classmethod
-    def config_traits(cls, **metadata):
-        """
-        Return configurable traits as a (possibly nested) dict.
-
-        The returned dict can be nested if this class has `Instance`
-        trait of :class:`TraitsCLIBase`.  Use :func:`flattendict` to
-        get a flat dictionary with dotted keys.
-
-        It is equivalent to ``cls.class_traits(config=True)`` if
-        ``cls`` has no `Instance` trait.
-
-        >>> class SubObject(TraitsCLIBase):
-        ...     int = Int(config=True)
-        ...
-        >>> class SampleCLI(TraitsCLIBase):
-        ...     nonconfigurable = Int()
-        ...     int = Int(config=True)
-        ...     sub = Instance(SubObject, args=(), config=True)
-        ...
-        >>> traits = SampleCLI.config_traits()
-        >>> traits                                         # doctest: +SKIP
-        {'int': <traits.traits.CTrait at ...>,
-         'sub': {'int': <traits.traits.CTrait at ...>}}
-        >>> traits['int'].trait_type                   # doctest: +ELLIPSIS
-        <traits.trait_types.Int object at ...>
-        >>> traits['sub']['int'].trait_type            # doctest: +ELLIPSIS
-        <traits.trait_types.Int object at ...>
-
-        """
-        traits = {}
-        for (k, v) in cls.class_traits(config=True).iteritems():
-            if (isinstance(v.trait_type, Instance) and
-                issubclass(v.trait_type.klass, TraitsCLIBase)):
-                traits[k] = v.trait_type.klass.config_traits()
-            else:
-                traits[k] = v
-        return traits
+    config_traits = classmethod(config_traits)
 
     def do_run(self):
         """

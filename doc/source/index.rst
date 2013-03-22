@@ -39,3 +39,13 @@ Utility functions
 
 .. autofunction:: multi_command_cli
 .. autofunction:: flattendict
+
+
+Change log
+----------
+
+v0.1
+^^^^
+
+- Classes which inherits :py:class:`HasTraits` but does not inherit
+  :py:class:`TraitsCLIBase` also can be used as a configurable trait.
