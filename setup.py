@@ -27,7 +27,7 @@ setup(
     long_description=data['__doc__'],
     keywords='CLI, traits',
     classifiers=[
-        "Development Status :: 3 - Alpha",
+        "Development Status :: 4 - Beta",
         # see: http://pypi.python.org/pypi?%3Aaction=list_classifiers
     ],
     install_requires=[
