@@ -131,7 +131,7 @@ Example run::
 """
 # [[[end]]]
 
-__version__ = '0.1.beta0'
+__version__ = '0.1.0'
 __author__ = 'Takafumi Arakaki'
 __license__ = 'BSD License'
 __all__ = ['TraitsCLIBase', 'multi_command_cli', 'flattendict']
