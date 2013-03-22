@@ -1,7 +1,7 @@
 Traits CLI - CLI generator based on class traits
 ================================================
 
-Traits CLI is based on `Enthought's Traits library <traits>`_.
+Traits CLI is based on Enthought's Traits_ library.
 
 Some benefits:
 
