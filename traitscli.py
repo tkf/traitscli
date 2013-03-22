@@ -538,8 +538,11 @@ def config_traits(cls, **metadata):
     traits = {}
     for (k, v) in cls.class_traits(config=True).iteritems():
         if (isinstance(v.trait_type, Instance) and
-            issubclass(v.trait_type.klass, HasTraits)):
-            traits[k] = config_traits(v.trait_type.klass)
+                issubclass(v.trait_type.klass, HasTraits)):
+            if issubclass(v.trait_type.klass, TraitsCLIBase):
+                traits[k] = v.trait_type.klass.config_traits()
+            else:
+                traits[k] = config_traits(v.trait_type.klass)
         else:
             traits[k] = v
     return traits
