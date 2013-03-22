@@ -506,6 +506,45 @@ def add_parser(cls, parser, prefix=''):
     return parser
 
 
+def config_traits(cls, **metadata):
+    """
+    Return configurable traits as a (possibly nested) dict.
+
+    The returned dict can be nested if this class has `Instance`
+    trait of :class:`TraitsCLIBase`.  Use :func:`flattendict` to
+    get a flat dictionary with dotted keys.
+
+    It is equivalent to ``cls.class_traits(config=True)`` if
+    ``cls`` has no `Instance` trait.
+
+    >>> class SubObject(TraitsCLIBase):
+    ...     int = Int(config=True)
+    ...
+    >>> class SampleCLI(TraitsCLIBase):
+    ...     nonconfigurable = Int()
+    ...     int = Int(config=True)
+    ...     sub = Instance(SubObject, args=(), config=True)
+    ...
+    >>> traits = SampleCLI.config_traits()
+    >>> traits                                         # doctest: +SKIP
+    {'int': <traits.traits.CTrait at ...>,
+     'sub': {'int': <traits.traits.CTrait at ...>}}
+    >>> traits['int'].trait_type                   # doctest: +ELLIPSIS
+    <traits.trait_types.Int object at ...>
+    >>> traits['sub']['int'].trait_type            # doctest: +ELLIPSIS
+    <traits.trait_types.Int object at ...>
+
+    """
+    traits = {}
+    for (k, v) in cls.class_traits(config=True).iteritems():
+        if (isinstance(v.trait_type, Instance) and
+            issubclass(v.trait_type.klass, HasTraits)):
+            traits[k] = config_traits(v.trait_type.klass)
+        else:
+            traits[k] = v
+    return traits
+
+
 class TraitsCLIBase(HasTraits):
 
     """
@@ -1164,44 +1203,7 @@ class TraitsCLIBase(HasTraits):
             return trait_type.klass.is_configurable(tail)
         return False
 
-    @classmethod
-    def config_traits(cls, **metadata):
-        """
-        Return configurable traits as a (possibly nested) dict.
-
-        The returned dict can be nested if this class has `Instance`
-        trait of :class:`TraitsCLIBase`.  Use :func:`flattendict` to
-        get a flat dictionary with dotted keys.
-
-        It is equivalent to ``cls.class_traits(config=True)`` if
-        ``cls`` has no `Instance` trait.
-
-        >>> class SubObject(TraitsCLIBase):
-        ...     int = Int(config=True)
-        ...
-        >>> class SampleCLI(TraitsCLIBase):
-        ...     nonconfigurable = Int()
-        ...     int = Int(config=True)
-        ...     sub = Instance(SubObject, args=(), config=True)
-        ...
-        >>> traits = SampleCLI.config_traits()
-        >>> traits                                         # doctest: +SKIP
-        {'int': <traits.traits.CTrait at ...>,
-         'sub': {'int': <traits.traits.CTrait at ...>}}
-        >>> traits['int'].trait_type                   # doctest: +ELLIPSIS
-        <traits.trait_types.Int object at ...>
-        >>> traits['sub']['int'].trait_type            # doctest: +ELLIPSIS
-        <traits.trait_types.Int object at ...>
-
-        """
-        traits = {}
-        for (k, v) in cls.class_traits(config=True).iteritems():
-            if (isinstance(v.trait_type, Instance) and
-                issubclass(v.trait_type.klass, TraitsCLIBase)):
-                traits[k] = v.trait_type.klass.config_traits()
-            else:
-                traits[k] = v
-        return traits
+    config_traits = classmethod(config_traits)
 
     def do_run(self):
         """
